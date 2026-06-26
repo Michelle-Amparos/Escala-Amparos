@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Escala AMPAROS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px;}
+h1{font-size:19px;font-weight:700;margin-bottom:18px;}
+.controls{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.controls select{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid #d2d2d7;background:#fff;color:#1d1d1f;cursor:pointer;}
+.month-title{font-size:17px;font-weight:700;flex:1;}
+.export-btns{display:flex;gap:8px;justify-content:flex-end;margin-bottom:12px;}
+.btn-pdf{font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;border:none;background:#b91c1c;color:#fff;cursor:pointer;}
+.btn-xls{font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;border:none;background:#15803d;color:#fff;cursor:pointer;}
+
+/* Barra de edicoes */
+.unsaved-bar{display:none;align-items:center;gap:8px;padding:8px 14px;background:#fffbeb;border:1px solid #fef08a;border-radius:10px;margin-bottom:10px;font-size:12px;}
+.unsaved-bar.show{display:flex;}
+.btn-undo{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid #d2d2d7;background:#fff;cursor:pointer;color:#1d1d1f;}
+.btn-undo:disabled{opacity:.4;cursor:default;}
+.btn-reset{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid #d2d2d7;background:#fff;cursor:pointer;color:#1d1d1f;}
+.btn-save{margin-left:auto;font-size:11px;font-weight:700;padding:5px 14px;border-radius:6px;border:none;background:#1d1d1f;color:#fff;cursor:pointer;}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:2px solid #e5e5ea;margin-bottom:0;}
+.tab-btn{font-size:12px;font-weight:600;padding:9px 20px;border:none;background:none;color:#6e6e73;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.tab-btn.active{color:#1d1d1f;border-bottom-color:#1d1d1f;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+
+/* Validacao */
+.valid-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;margin-top:12px;margin-bottom:10px;}
+.valid-hdr{background:#f5f5f7;padding:8px 14px;border-bottom:1px solid #e5e5ea;display:flex;align-items:center;justify-content:space-between;}
+.valid-hdr span{font-size:11px;font-weight:700;color:#6e6e73;text-transform:uppercase;letter-spacing:.4px;}
+.btn-collapse{font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid #d2d2d7;background:#fff;cursor:pointer;}
+.valid-table{width:100%;border-collapse:collapse;font-size:11px;}
+.valid-table th{background:#f5f5f7;font-size:10px;font-weight:700;color:#6e6e73;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid #e5e5ea;text-align:center;white-space:nowrap;}
+.valid-table th:first-child{text-align:left;}
+.valid-table td{padding:9px 10px;border-bottom:1px solid #f2f2f7;text-align:center;}
+.valid-table td:first-child{text-align:left;}
+.valid-table tr:last-child td{border-bottom:none;}
+.status-tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;}
+
+/* Calendario */
+.cal-wrap{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.cal-header{display:grid;grid-template-columns:88px repeat(7,1fr);background:#f5f5f7;border-bottom:1px solid #e5e5ea;}
+.cal-header div{font-size:11px;font-weight:700;color:#6e6e73;padding:8px 4px;text-align:center;}
+.cal-row{display:grid;grid-template-columns:88px repeat(7,1fr);border-bottom:1px solid #f2f2f7;min-height:52px;}
+.cal-row:last-child{border-bottom:none;}
+.rl{font-size:11px;font-weight:600;color:#6e6e73;padding:5px 8px;display:flex;align-items:center;border-right:1px solid #f2f2f7;}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0;}
+.cell{padding:3px 2px;border-right:1px solid #f2f2f7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;}
+.cell:last-child{border-right:none;}
+.cell:hover{background:rgba(0,0,0,.04)!important;}
+.cell.wk{background:rgba(88,86,214,.03);}
+.cell.rc{background:rgba(186,117,23,.08);}
+.cell.edited{outline:2px solid #3b82f6;outline-offset:-2px;border-radius:3px;}
+.badge{font-size:8.5px;font-weight:600;padding:2px 5px;border-radius:9px;text-align:center;display:inline-flex;flex-direction:column;align-items:center;line-height:1.3;min-width:56px;pointer-events:none;}
+.bi{font-size:10px;line-height:1;}
+.bt{font-size:8.5px;font-weight:700;}
+.bh{font-size:7.5px;opacity:.85;}
+.c-pr514{background:#bfdbfe;color:#1e40af;}.c-ho514{background:#dbeafe;color:#1d4ed8;}
+.c-ho817{background:#e0f2fe;color:#0369a1;}
+.c-ho918{background:#e0f9fe;color:#0e7490;}
+.c-pr817{background:#dcfce7;color:#15803d;}
+.c-pr918{background:#d1fae5;color:#065f46;}
+.c-lid{background:#fef3c7;color:#92400e;}
+.c-reu{background:#ba7517;color:#fff;}
+.c-folg{background:#f3f4f6;color:#6b7280;}
+.c-fer{background:#ede9fe;color:#5b21b6;}
+.c-fal{background:#fce7f3;color:#9d174d;}
+.dn{font-size:10px;color:#9ca3af;}
+.rh{font-size:8px;font-weight:700;color:#ba7517;margin-top:1px;}
+.sep{font-size:11px;font-weight:700;color:#6e6e73;padding:6px 10px;border-bottom:1px solid #e5e5ea;background:#f5f5f7;text-transform:uppercase;letter-spacing:.3px;}
+.sb-row{display:grid;grid-template-columns:88px repeat(7,1fr);border-top:1px solid #e5e5ea;background:#fafafa;min-height:24px;}
+
+/* Menu edicao */
+.edit-overlay{position:fixed;inset:0;z-index:9998;display:none;}
+.edit-overlay.open{display:block;}
+.edit-menu{position:fixed;z-index:9999;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:6px;min-width:210px;display:none;}
+.edit-menu.open{display:block;}
+.edit-menu-title{font-size:10px;font-weight:700;color:#6e6e73;text-transform:uppercase;letter-spacing:.4px;padding:4px 8px 6px;}
+.edit-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;width:100%;text-align:left;border:none;background:none;color:#1d1d1f;}
+.edit-opt:hover{background:#f5f5f7;}
+.edit-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Beneficios */
+.benef-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;margin-top:12px;}
+.benef-table{width:100%;border-collapse:collapse;font-size:12px;}
+.benef-table th{background:#f5f5f7;font-size:10px;font-weight:700;color:#6e6e73;text-transform:uppercase;padding:9px 12px;border-bottom:1px solid #e5e5ea;white-space:nowrap;}
+.benef-table td{padding:10px 12px;border-bottom:1px solid #f2f2f7;}
+.benef-table tr:last-child td{border-bottom:none;}
+.benef-table .tot{font-weight:700;background:#f9f9fb;}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;}
+.tag-rc{background:#dbeafe;color:#1d4ed8;}
+.tag-rf{background:#fef3c7;color:#92400e;}
+.tag-jae{background:#d1fae5;color:#065f46;}
+.tag-rb{background:#ede9fe;color:#5b21b6;}
+.total-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+.total-card{background:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.tc-label{font-size:10px;color:#6e6e73;text-transform:uppercase;letter-spacing:.3px;font-weight:600;margin-bottom:4px;}
+.tc-val{font-size:20px;font-weight:700;color:#1d1d1f;}
+.tc-sub{font-size:10px;color:#6e6e73;margin-top:2px;}
+
+/* Horas extras */
+.he-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden;margin-top:12px;}
+.he-table{width:100%;border-collapse:collapse;font-size:12px;}
+.he-table th{background:#f5f5f7;font-size:10px;font-weight:700;color:#6e6e73;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #e5e5ea;}
+.he-table td{padding:9px 12px;border-bottom:1px solid #f2f2f7;}
+.he-table tr:last-child td{border-bottom:none;}
+.tag-he{background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;}
+.tag-fer2{background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;}
+.tag-cob{background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;}
+
+/* Legenda */
+.legend{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-top:14px;}
+.legend h3{font-size:10px;font-weight:700;color:#6e6e73;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.leg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.li{display:flex;align-items:flex-start;gap:8px;}
+.li-desc{display:flex;flex-direction:column;gap:2px;}
+.li-title{font-weight:700;color:#1d1d1f;font-size:11px;}
+.li-sub{font-size:10px;color:#6e6e73;line-height:1.3;}
+
+.group-sep{display:grid;grid-template-columns:88px repeat(7,1fr);background:#f0f9ff;border-bottom:1px solid #e5e5ea;border-top:2px solid #bae6fd;}
+.group-sep-label{font-size:10px;font-weight:700;color:#0369a1;padding:4px 8px;display:flex;align-items:center;grid-column:1/-1;letter-spacing:.4px;text-transform:uppercase;}
+
+.badge-cob{background:#fef3c7;color:#92400e;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;margin-top:1px;display:block;text-align:center;}
+.cell-cob{background:rgba(251,191,36,.08)!important;border-left:2px solid #f59e0b!important;}
+
+.badge-fds{background:linear-gradient(135deg,#fde68a,#f59e0b);color:#78350f;font-size:8px;font-weight:800;padding:2px 6px;border-radius:4px;margin-top:1px;display:block;text-align:center;letter-spacing:.3px;}
+</style>
+</head>
+<body>
+<h1>&#x1F4CB; Dashboard de Escala &mdash; AMPAROS</h1>
+
+<div class="controls">
+  <span class="month-title" id="mTitle">Julho 2026</span>
+  <select id="mSel" onchange="render()">
+    <option value="0">Julho 2026</option>
+    <option value="1">Agosto 2026</option>
+    <option value="2">Setembro 2026</option>
+    <option value="3">Outubro 2026</option>
+    <option value="4">Novembro 2026</option>
+    <option value="5">Dezembro 2026</option>
+  </select>
+  <select id="vSel" onchange="render()">
+    <option value="all">Toda a equipe</option>
+    <option value="Jaqueline">Jaqueline</option>
+    <option value="Indiara">Indiara</option>
+    <option value="Jana">Jana</option>
+    <option value="Duda">Duda</option>
+    <option value="Beatriz">Beatriz</option>
+    <option value="Thamyres">Thamyres</option>
+    <option value="Marina">Marina</option>
+    <option value="Mariana">Mariana</option>
+    <option value="Paula">Paula</option>
+    <option value="Karina">Karina</option>
+  </select>
+</div>
+
+<div class="export-btns">
+  <button class="btn-pdf" onclick="exportPDF()">&#x1F4C4; Exportar PDF</button>
+  <button class="btn-xls" onclick="exportExcel()">&#x1F4CA; Exportar Excel</button>
+  <button onclick="exportarEquipe()" style="background:#0369a1;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;">&#x1F465; Para a Equipe</button>
+</div>
+
+<div id="editLogWrap" style="display:none;position:fixed;top:60px;right:16px;width:380px;max-height:400px;overflow-y:auto;background:white;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);border:1px solid #e5e5ea;z-index:1000;padding:12px 16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span style="font-weight:700;font-size:13px;">&#x1F4DD; Histórico de Edições</span>
+    <button onclick="document.getElementById('editLogWrap').style.display='none'" style="background:none;border:none;font-size:16px;cursor:pointer;color:#6e6e73;">&#x2715;</button>
+  </div>
+  <div id="editLog"><span style="color:#8e8e93;font-size:11px;">Nenhuma edição nesta sessão.</span></div>
+</div>
+
+<div class="unsaved-bar" id="unsavedBar">
+  <span>&#x270F;&#xFE0F; Alterações não salvas</span>
+  <button class="btn-undo" id="btnUndo" onclick="desfazer()" disabled>&#x21A9; Desfazer</button>
+  <button onclick="var w=document.getElementById('editLogWrap');w.style.display=w.style.display==='none'?'block':'none';atualizarUndo();" style="font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid #e5e5ea;background:white;cursor:pointer;color:#0369a1;">&#x1F4DD; Histórico</button>
+  <button class="btn-reset" onclick="resetTudo()">Desfazer tudo</button>
+  <button class="btn-reset" onclick="limparTudo()" title="Limpa edições salvas no navegador">🗑 Limpar cache</button>
+  <button class="btn-save" onclick="salvar()">&#x1F4BE; Salvar</button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('cal',this)">&#x1F4C5; Calendário</button>
+  <button class="tab-btn" onclick="switchTab('benef',this)">&#x1F4B3; Benefícios</button>
+  <button class="tab-btn" onclick="switchTab('he',this)">&#x23F1; Horas Extras</button>
+  <button class="tab-btn" onclick="switchTab('pend',this)" style="color:#b45309;">&#x26A0;&#xFE0F; Pendências</button>
+</div>
+
+<!-- TAB PENDÊNCIAS -->
+<div id="tab-pend" class="tab-panel" style="padding:24px;max-width:800px;">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">&#x26A0;&#xFE0F; Pendências para validar</h2>
+
+  <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:20px;margin-bottom:16px;">
+    <div style="font-weight:700;font-size:14px;color:#92400e;margin-bottom:12px;">⏳ 2h flutuantes — acionadas sob demanda quando necessário</div>
+    <div style="font-size:12px;color:#78350f;margin-bottom:12px;">
+      As colaboradoras abaixo têm contrato de <strong>44h semanais</strong> com escala regular em <strong>40h</strong>. 
+      As 4h restantes ficam disponíveis para uso pontual — hora extra registrada no menu de edição do calendário.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:white;border-radius:8px;padding:12px;border-left:3px solid #f59e0b;">
+        <div style="font-weight:700;color:#92400e;">Beatriz</div>
+        <div style="font-size:11px;color:#78350f;margin-top:4px;">08–17 seg-sex · Ter = HO</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">4h sob demanda</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px;border-left:3px solid #f59e0b;">
+        <div style="font-weight:700;color:#92400e;">Mariana</div>
+        <div style="font-size:11px;color:#78350f;margin-top:4px;">09–18 seg-sex · Qua = HO</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">4h sob demanda</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:12px;border-left:3px solid #f59e0b;">
+        <div style="font-weight:700;color:#92400e;">Karina</div>
+        <div style="font-size:11px;color:#78350f;margin-top:4px;">09–18 seg-sex · Qui = HO</div>
+        <div style="font-size:11px;color:#6b7280;margin-top:4px;">4h sob demanda</div>
+      </div>
+
+    </div>
+    <div style="margin-top:12px;font-size:11px;color:#92400e;border-top:1px solid #fde68a;padding-top:8px;">
+      Para registrar: abrir o dia no calendário → menu de edição → campo ⏱ Hora Extra
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:16px;">
+    <div style="font-weight:700;font-size:13px;color:#166534;margin-bottom:8px;">✅ Já resolvido</div>
+    <ul style="font-size:12px;color:#15803d;line-height:1.8;margin:0;padding-left:18px;">
+      <li>Karina, Beatriz, Mariana: 2h flutuantes disponíveis sob demanda — sem sábado fixo ✅</li>
+      <li>Indiara, Jana, Duda: 2h flutuantes usadas em coberturas de turno (+1h banco) ✅</li>
+      <li>Jaqueline: regime especial 24h/sem — sem flutuantes ✅</li>
+    </ul>
+  </div>
+</div>
+
+<!-- TAB CALENDÁRIO -->
+<div id="tab-cal" class="tab-panel active">
+  <div class="valid-wrap">
+    <div class="valid-hdr">
+      <span>&#x1F4CA; Validação de Jornada — <span id="validMes"></span></span>
+      <button class="btn-collapse" onclick="toggleValid()">Recolher</button>
+    </div>
+    <div id="validBody"><table class="valid-table"><thead id="validHead"></thead><tbody id="validRows"></tbody></table></div>
+  </div>
+  <div class="cal-wrap" id="cal"></div>
+</div>
+
+<!-- TAB BENEFÍCIOS -->
+<div id="tab-benef" class="tab-panel">
+  <div id="feriadoWrap"></div>
+<div class="benef-wrap"><table class="benef-table"><thead id="benefHead"></thead><tbody id="benefRows"></tbody></table></div>
+  <div class="total-cards" id="benefTotais"></div>
+</div>
+
+<!-- TAB HORAS EXTRAS -->
+<div id="tab-he" class="tab-panel">
+  <div class="he-wrap" id="heWrap">
+    <div style="padding:20px;color:#6e6e73;font-size:12px;text-align:center;">Edite células do calendário para ver horas extras calculadas automaticamente.</div>
+  </div>
+</div>
+
+<!-- LEGENDA -->
+<div class="legend">
+  <h3>Legenda de turnos</h3>
+  <div class="leg-grid">
+    <div class="li"><span class="badge c-ho514"><span class="bi">&#x1F3E0;</span><span class="bt">Home Office</span><span class="bh">05–14 | alm 11–12</span></span><div class="li-desc"><span class="li-title">Home Office — Abertura</span><span class="li-sub">05h–14h | Almoço 11–12h</span></div></div>
+    <div class="li"><span class="badge c-ho817"><span class="bi">&#x1F3E0;</span><span class="bt">Home Office</span><span class="bh">08–17 | alm 13–14</span></span><div class="li-desc"><span class="li-title">Home Office — Padrão</span><span class="li-sub">08h–17h | Almoço 13–14h</span></div></div>
+    <div class="li"><span class="badge c-ho918"><span class="bi">&#x1F3E0;</span><span class="bt">Home Office</span><span class="bh">09–18 | alm 12:30</span></span><div class="li-desc"><span class="li-title">Home Office — Tarde</span><span class="li-sub">09h–18h | Almoço 12:30–13:30</span></div></div>
+    <div class="li"><span class="badge c-pr817"><span class="bi">&#x1F3E2;</span><span class="bt">Presencial</span><span class="bh">08–17 | alm 13–14</span></span><div class="li-desc"><span class="li-title">Presencial 08h–17h</span><span class="li-sub">Almoço 13–14h</span></div></div>
+    <div class="li"><span class="badge c-pr918"><span class="bi">&#x1F3E2;</span><span class="bt">Presencial</span><span class="bh">09–18 | alm 12:30</span></span><div class="li-desc"><span class="li-title">Presencial 09h–18h</span><span class="li-sub">Almoço 12:30–13:30</span></div></div>
+    <div class="li"><span class="badge c-reu"><span class="bi">&#x1F4CB;</span><span class="bt">Reunião</span><span class="bh">14h–17h presencial</span></span><div class="li-desc"><span class="li-title">Reunião Geral — 1ª Quarta</span><span class="li-sub">Toda equipe presencial 14–17h</span></div></div>
+    <div class="li"><span class="badge c-fer"><span class="bi">&#x1F334;</span><span class="bt">Férias</span></span><div class="li-desc"><span class="li-title">Férias</span><span class="li-sub">Período de férias</span></div></div>
+    <div class="li"><span class="badge c-folg"><span class="bt">— Folga</span></span><div class="li-desc"><span class="li-title">Folga / DSR</span><span class="li-sub">Dia de descanso</span></div></div>
+  </div>
+</div>
+
+<!-- MENU DE EDIÇÃO -->
+<div class="edit-overlay" id="editOverlay" onclick="closeMenu()"></div>
+<div class="edit-menu" id="editMenu">
+  <div class="edit-menu-title" id="editMenuTitle">Editar turno</div>
+  <div id="editMenuOpts"></div>
+  <div style="border-top:1px solid #f2f2f7;margin:4px 0;padding:8px 10px;">
+    <div style="font-size:10px;font-weight:700;color:#6e6e73;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">⏱ Hora Extra</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input id="heInput" type="number" min="0.5" max="10" step="0.5" placeholder="ex: 1.5"
+        style="width:70px;border:1px solid #e5e5ea;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;">
+      <span style="font-size:11px;color:#6e6e73;">horas</span>
+      <button onclick="registrarHE()" style="background:#f59e0b;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Salvar</button>
+    </div>
+    <button onclick="limparHE()" style="margin-top:5px;font-size:10px;color:#9ca3af;background:none;border:none;cursor:pointer;padding:0;">✖ Remover hora extra deste dia</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ============================================================
+// DADOS
+// ============================================================
+var PEOPLE = ['Jaqueline','Indiara','Jana','Duda','Beatriz','Thamyres','Marina','Mariana','Paula','Karina'];
+var LIDERS = {Thamyres:1, Marina:1};
+var COLORS = {Jaqueline:'#7c3aed',Indiara:'#1d4ed8',Jana:'#15803d',Duda:'#b45309',Beatriz:'#b91c1c',Thamyres:'#0f766e',Marina:'#9d174d',Mariana:'#0891b2',Paula:'#65a30d',Karina:'#d97706'};
+var MN = ['Julho 2026','Agosto 2026','Setembro 2026','Outubro 2026','Novembro 2026','Dezembro 2026'];
+var KK = {Jaqueline:'J',Indiara:'I',Jana:'Ja',Duda:'Du',Beatriz:'B',Thamyres:'T',Marina:'M',Mariana:'Ma',Paula:'Pa',Karina:'Ka'};
+var VT = {Jaqueline:{tipo:'Reembolso direto',val:0},Indiara:{tipo:'Riocard físico',val:18.80},Jana:{tipo:'Riocard',val:15.80},Duda:{tipo:'Jaé',val:10.00},Beatriz:{tipo:'Jaé',val:10.00},Thamyres:{tipo:'Riocard',val:27.70},Marina:{tipo:'Riocard',val:24.70}};
+var SODEXO = 25.33;
+
+var M0=[{"d": "01/07", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "02/07", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "03/07", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "04/07", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "05/07", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "06/07", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "07/07", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "08/07", "dia": "Qua", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "09/07", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "10/07", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "11/07", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_I": true}, {"d": "12/07", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_I": true}, {"d": "13/07", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "14/07", "dia": "Ter", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "15/07", "dia": "Qua", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "16/07", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "17/07", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "18/07", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Ja": true}, {"d": "19/07", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Ja": true}, {"d": "20/07", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "21/07", "dia": "Ter", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "22/07", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "23/07", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "24/07", "dia": "Sex", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "25/07", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Du": true}, {"d": "26/07", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Du": true}, {"d": "27/07", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "28/07", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "29/07", "dia": "Qua", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "30/07", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "31/07", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}];
+var M1=[{"d": "01/08", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "02/08", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "03/08", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "04/08", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "05/08", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "06/08", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "07/08", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "Folga", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "I estende 17h-18h (+1h banco) ✅"}, {"d": "08/08", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle"}, {"d": "09/08", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "09-18 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle"}, {"d": "10/08", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "11/08", "dia": "Ter", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "12/08", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "13/08", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "14/08", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "15/08", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "16/08", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "17/08", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "18/08", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "19/08", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "20/08", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "21/08", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "22/08", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "23/08", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "24/08", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "25/08", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "26/08", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "27/08", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "28/08", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "Folga", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "I estende 17h-18h (+1h banco) ✅"}, {"d": "29/08", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "30/08", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "31/08", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}];
+var M2=[{"d": "01/09", "dia": "Ter", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "02/09", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "03/09", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "04/09", "dia": "Sex", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "05/09", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle"}, {"d": "06/09", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle"}, {"d": "07/09", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "08/09", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "09/09", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "10/09", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "11/09", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "12/09", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Ja": true}, {"d": "13/09", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Ja": true}, {"d": "14/09", "dia": "Seg", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "15/09", "dia": "Ter", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "16/09", "dia": "Qua", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "17/09", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "18/09", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "19/09", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "09-18 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Du": true}, {"d": "20/09", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Du": true}, {"d": "21/09", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "22/09", "dia": "Ter", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "23/09", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "24/09", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "25/09", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "26/09", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "27/09", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "28/09", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "29/09", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "30/09", "dia": "Qua", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}];
+var M3=[{"d": "01/10", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "02/10", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "03/10", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle"}, {"d": "04/10", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle"}, {"d": "05/10", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "06/10", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "07/10", "dia": "Qua", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "08/10", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "09/10", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "Folga", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "I estende 17h-18h (+1h banco) ✅"}, {"d": "10/10", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "11/10", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "12/10", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "13/10", "dia": "Ter", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "14/10", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "15/10", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "16/10", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "17/10", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "18/10", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "19/10", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "20/10", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "21/10", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "22/10", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "23/10", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "24/10", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "25/10", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "26/10", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "27/10", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "28/10", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "29/10", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "30/10", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "Folga", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "I estende 17h-18h (+1h banco) ✅"}, {"d": "31/10", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle"}];
+var M4=[{"d": "01/11", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle"}, {"d": "02/11", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "03/11", "dia": "Ter", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "04/11", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "05/11", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "06/11", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "07/11", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "08/11", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_I": true}, {"d": "09/11", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "10/11", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "11/11", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "12/11", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "13/11", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "14/11", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "15/11", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "16/11", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "17/11", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "Folga", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "I estende 17h-18h (+1h banco) ✅"}, {"d": "18/11", "dia": "Qua", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "19/11", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "20/11", "dia": "Sex", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "21/11", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "22/11", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "23/11", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "24/11", "dia": "Ter", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "25/11", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "26/11", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "27/11", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "28/11", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle"}, {"d": "29/11", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "09-18 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle"}, {"d": "30/11", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}];
+var M5=[{"d": "01/12", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "02/12", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "03/12", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "04/12", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "05/12", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "09-18 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "06/12", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella"}, {"d": "07/12", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "08/12", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "09/12", "dia": "Qua", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "10/12", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "Folga", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": "", "alerta": "09-18", "acao": "Ja estende 17h-18h (+1h banco) ✅"}, {"d": "11/12", "dia": "Sex", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "12/12", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "13/12", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_Ja": true}, {"d": "14/12", "dia": "Seg", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "15/12", "dia": "Ter", "J": "Folga", "I": "Folga", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": "", "alerta": "09-18", "acao": "Du estende 17h-18h (+1h banco) ✅"}, {"d": "16/12", "dia": "Qua", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "17/12", "dia": "Qui", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "18/12", "dia": "Sex", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "19/12", "dia": "Sab", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "09-18 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "20/12", "dia": "Dom", "J": "05-14 Home Office", "I": "08-17 Home Office", "Ja": "Folga", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Thamyres", "pe": "Rafaella", "fds_Du": true}, {"d": "21/12", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "22/12", "dia": "Ter", "J": "Folga", "I": "05-14 Home Office", "Ja": "Folga", "Du": "09-18 Presencial", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "23/12", "dia": "Qua", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "24/12", "dia": "Qui", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "Folga", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}, {"d": "25/12", "dia": "Sex", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-18 Presencial", "pt": "", "pe": ""}, {"d": "26/12", "dia": "Sab", "J": "05-14 Home Office", "I": "Folga", "Ja": "Folga", "Du": "08-17 Home Office", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "08-12 Home Office", "pt": "Marina", "pe": "Michelle", "fds_I": true}, {"d": "27/12", "dia": "Dom", "J": "05-14 Home Office", "I": "Folga", "Ja": "08-17 Home Office", "Du": "Folga", "B": "Folga", "T": "", "M": "", "Ma": "Folga", "Pa": "", "Ka": "", "pt": "Marina", "pe": "Michelle", "fds_I": true}, {"d": "28/12", "dia": "Seg", "J": "05-14 Home Office", "I": "08-17 Presencial", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "29/12", "dia": "Ter", "J": "Folga", "I": "08-17 Presencial", "Ja": "09-18 Presencial", "Du": "05-14 Home Office", "B": "08-17 Home Office", "T": "Presencial", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "30/12", "dia": "Qua", "J": "Folga", "I": "09-18 Presencial", "Ja": "05-14 Home Office", "Du": "08-17 Presencial", "B": "08-17 Presencial", "T": "Presencial", "M": "08-17 Home Office", "Ma": "09-18 Home Office", "Pa": "09-18 Home Office", "Ka": "09-17 Presencial", "pt": "", "pe": ""}, {"d": "31/12", "dia": "Qui", "J": "Folga", "I": "05-14 Home Office", "Ja": "08-17 Presencial", "Du": "09-18 Presencial", "B": "08-17 Presencial", "T": "08-17 Home Office", "M": "Presencial", "Ma": "09-18 Presencial", "Pa": "09-18 Presencial", "Ka": "09-17 Home Office", "pt": "", "pe": ""}];
+
+
+var AD=[M0,M1,M2,M3,M4,M5];
+
+var BENEF={"Julho": {"Jaqueline": {"dias_trab": 12, "dias_pres": 0, "sodexo": 303.96, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 303.96}, "Indiara": {"dias_trab": 25, "dias_pres": 14, "sodexo": 633.25, "vt": 263.2, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 896.45}, "Jana": {"dias_trab": 25, "dias_pres": 14, "sodexo": 633.25, "vt": 221.2, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 854.45}, "Duda": {"dias_trab": 25, "dias_pres": 15, "sodexo": 633.25, "vt": 150.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 783.25}, "Beatriz": {"dias_trab": 23, "dias_pres": 19, "sodexo": 582.59, "vt": 190.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 772.59}, "Thamyres": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 498.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1081.19}, "Marina": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 444.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1027.19}, "Mariana": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 464.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1046.99}, "Paula": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 866.99}, "Karina": {"dias_trab": 27, "dias_pres": 18, "sodexo": 683.91, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 968.31}}, "Agosto": {"Jaqueline": {"dias_trab": 15, "dias_pres": 0, "sodexo": 379.95, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 379.95}, "Indiara": {"dias_trab": 23, "dias_pres": 13, "sodexo": 582.59, "vt": 244.4, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 826.99}, "Jana": {"dias_trab": 23, "dias_pres": 12, "sodexo": 582.59, "vt": 189.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 772.19}, "Duda": {"dias_trab": 23, "dias_pres": 11, "sodexo": 582.59, "vt": 110.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 692.59}, "Beatriz": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 170.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 701.93}, "Thamyres": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 470.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1002.83}, "Marina": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 419.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 951.83}, "Mariana": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 438.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 970.53}, "Paula": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 800.53}, "Karina": {"dias_trab": 26, "dias_pres": 17, "sodexo": 658.58, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 927.18}}, "Setembro": {"Jaqueline": {"dias_trab": 12, "dias_pres": 0, "sodexo": 303.96, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 303.96}, "Indiara": {"dias_trab": 22, "dias_pres": 12, "sodexo": 557.26, "vt": 225.6, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 782.86}, "Jana": {"dias_trab": 22, "dias_pres": 13, "sodexo": 557.26, "vt": 205.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 762.66}, "Duda": {"dias_trab": 22, "dias_pres": 13, "sodexo": 557.26, "vt": 130.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 687.26}, "Beatriz": {"dias_trab": 22, "dias_pres": 17, "sodexo": 557.26, "vt": 170.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 727.26}, "Thamyres": {"dias_trab": 22, "dias_pres": 18, "sodexo": 557.26, "vt": 498.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1055.86}, "Marina": {"dias_trab": 22, "dias_pres": 17, "sodexo": 557.26, "vt": 419.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 977.16}, "Mariana": {"dias_trab": 22, "dias_pres": 17, "sodexo": 557.26, "vt": 438.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 995.86}, "Paula": {"dias_trab": 22, "dias_pres": 17, "sodexo": 557.26, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 825.86}, "Karina": {"dias_trab": 26, "dias_pres": 18, "sodexo": 658.58, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 942.98}}, "Outubro": {"Jaqueline": {"dias_trab": 13, "dias_pres": 0, "sodexo": 329.29, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 329.29}, "Indiara": {"dias_trab": 23, "dias_pres": 13, "sodexo": 582.59, "vt": 244.4, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 826.99}, "Jana": {"dias_trab": 23, "dias_pres": 11, "sodexo": 582.59, "vt": 173.8, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 756.39}, "Duda": {"dias_trab": 23, "dias_pres": 13, "sodexo": 582.59, "vt": 130.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 712.59}, "Beatriz": {"dias_trab": 22, "dias_pres": 18, "sodexo": 557.26, "vt": 180.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 737.26}, "Thamyres": {"dias_trab": 22, "dias_pres": 17, "sodexo": 557.26, "vt": 470.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1028.16}, "Marina": {"dias_trab": 22, "dias_pres": 18, "sodexo": 557.26, "vt": 444.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1001.86}, "Mariana": {"dias_trab": 22, "dias_pres": 18, "sodexo": 557.26, "vt": 464.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1021.66}, "Paula": {"dias_trab": 22, "dias_pres": 18, "sodexo": 557.26, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 841.66}, "Karina": {"dias_trab": 27, "dias_pres": 17, "sodexo": 683.91, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 952.51}}, "Novembro": {"Jaqueline": {"dias_trab": 14, "dias_pres": 0, "sodexo": 354.62, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 354.62}, "Indiara": {"dias_trab": 22, "dias_pres": 13, "sodexo": 557.26, "vt": 244.4, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 801.66}, "Jana": {"dias_trab": 22, "dias_pres": 10, "sodexo": 557.26, "vt": 158.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 715.26}, "Duda": {"dias_trab": 22, "dias_pres": 13, "sodexo": 557.26, "vt": 130.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 687.26}, "Beatriz": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 170.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 701.93}, "Thamyres": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 470.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1002.83}, "Marina": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 419.9, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 951.83}, "Mariana": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 438.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 970.53}, "Paula": {"dias_trab": 21, "dias_pres": 17, "sodexo": 531.93, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 800.53}, "Karina": {"dias_trab": 25, "dias_pres": 17, "sodexo": 633.25, "vt": 268.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 901.85}}, "Dezembro": {"Jaqueline": {"dias_trab": 12, "dias_pres": 0, "sodexo": 303.96, "vt": 0, "vt_obs": "Reembolso direto — 1 dia (reunião)", "fer_extra": 0, "tipo_vt": "Reembolso direto", "total": 303.96}, "Indiara": {"dias_trab": 23, "dias_pres": 12, "sodexo": 582.59, "vt": 225.6, "vt_obs": "Recarga física — não fazer pelo site", "fer_extra": 0, "tipo_vt": "Riocard físico", "total": 808.19}, "Jana": {"dias_trab": 23, "dias_pres": 14, "sodexo": 582.59, "vt": 221.2, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 803.79}, "Duda": {"dias_trab": 23, "dias_pres": 14, "sodexo": 582.59, "vt": 140.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 722.59}, "Beatriz": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 180.0, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Jaé", "total": 762.59}, "Thamyres": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 498.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1081.19}, "Marina": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 444.6, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1027.19}, "Mariana": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 464.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 1046.99}, "Paula": {"dias_trab": 23, "dias_pres": 18, "sodexo": 582.59, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 866.99}, "Karina": {"dias_trab": 27, "dias_pres": 18, "sodexo": 683.91, "vt": 284.4, "vt_obs": "", "fer_extra": 0, "tipo_vt": "Riocard", "total": 968.31}}};
+var EXP_MAP=[{"Jaqueline": 96, "Indiara": 186, "Jana": 186, "Duda": 186, "Beatriz": 186, "Mariana": 186, "Paula": 186, "Karina": 192}, {"Jaqueline": 120, "Indiara": 186, "Jana": 186, "Duda": 186, "Beatriz": 186, "Mariana": 186, "Paula": 186, "Karina": 176}, {"Jaqueline": 96, "Indiara": 180, "Jana": 180, "Duda": 180, "Beatriz": 180, "Mariana": 180, "Paula": 180, "Karina": 184}, {"Jaqueline": 104, "Indiara": 186, "Jana": 186, "Duda": 186, "Beatriz": 186, "Mariana": 186, "Paula": 186, "Karina": 184}, {"Jaqueline": 112, "Indiara": 180, "Jana": 180, "Duda": 180, "Beatriz": 180, "Mariana": 180, "Paula": 180, "Karina": 176}, {"Jaqueline": 96, "Indiara": 186, "Jana": 186, "Duda": 186, "Beatriz": 186, "Mariana": 186, "Paula": 186, "Karina": 192}];
+var ACERTOS=[[{"d": "07/07", "dia": "Ter", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "24/07", "dia": "Sex", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}], [{"d": "05/08", "dia": "Qua", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "06/08", "dia": "Qui", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "07/08", "dia": "Sex", "quem": "Indiara", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "18/08", "dia": "Ter", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "26/08", "dia": "Qua", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "28/08", "dia": "Sex", "quem": "Indiara", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}], [{"d": "04/09", "dia": "Sex", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "08/09", "dia": "Ter", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}], [{"d": "09/10", "dia": "Sex", "quem": "Indiara", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "13/10", "dia": "Ter", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "28/10", "dia": "Qua", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "29/10", "dia": "Qui", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "30/10", "dia": "Sex", "quem": "Indiara", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}], [{"d": "13/11", "dia": "Sex", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "17/11", "dia": "Ter", "quem": "Indiara", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "24/11", "dia": "Ter", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}], [{"d": "09/12", "dia": "Qua", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "10/12", "dia": "Qui", "quem": "Jana", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}, {"d": "15/12", "dia": "Ter", "quem": "Duda", "horas": 1, "desc": "Cobertura turno 09-18 — estende 17h-18h"}]];
+
+// ============================================================
+// EDIÇÃO
+// ============================================================
+var edicoes = {};
+var historico = [];
+var menuAtivo = null;
+
+var OPCOES = [
+  // Home Office
+  {l:'🏠 HO 05–14 (abertura)', v:'05-14 Home Office', bg:'#dbeafe', fg:'#1d4ed8'},
+  {l:'🏠 HO 08–17',            v:'08-17 Home Office', bg:'#e0f2fe', fg:'#0369a1'},
+  {l:'🏠 HO 09–18',            v:'09-18 Home Office', bg:'#e0f9fe', fg:'#0e7490'},
+  {l:'🏠 HO Liderança',        v:'Home Office',        bg:'#fef9c3', fg:'#854d0e'},
+  // Presencial
+  {l:'🏢 Presencial 08–17',    v:'08-17 Presencial',  bg:'#dcfce7', fg:'#15803d'},
+  {l:'🏢 Presencial 09–18',    v:'09-18 Presencial',  bg:'#d1fae5', fg:'#065f46'},
+  {l:'🏢 Presencial Liderança', v:'Presencial',        bg:'#fef9c3', fg:'#854d0e'},
+  // Outros
+  {l:'🌴 Férias',              v:'Férias',             bg:'#ede9fe', fg:'#5b21b6'},
+  {l:'🤒 Falta',               v:'Falta',              bg:'#fce7f3', fg:'#9d174d'},
+  {l:'— Folga',                v:'Folga',              bg:'#f3f4f6', fg:'#6b7280'},
+  {l:'🏛️ Feriado',           v:'Feriado',            bg:'#fef3c7', fg:'#92400e'},
+  {l:'🏛️ Feriado Trab. 12h',  v:'Feriado 12h',        bg:'#fce7f3', fg:'#9d174d'},
+  {l:'🏛️ Feriado Trab. 24h',  v:'Feriado 24h',        bg:'#fdf2f8', fg:'#7e1d6d'},
+  {l:'✖ Limpar',               v:'',                   bg:'#f9fafb', fg:'#9ca3af'},
+];
+
+// Horas extras registradas manualmente: {mi_d_key: horas}
+var horasExtras = {};
+function heKey(mi,d,key){ return 'he_'+mi+'_'+d+'_'+key; }
+function carregarHE(){ try{ horasExtras=JSON.parse(localStorage.getItem('amparos_he')||'{}'); }catch(e){ horasExtras={}; } }
+function salvarHE(){ localStorage.setItem('amparos_he', JSON.stringify(horasExtras)); }
+carregarHE();
+
+function registrarHE(){
+  if(!menuAtivo) return;
+  var hrs = parseFloat(document.getElementById('heInput').value);
+  if(isNaN(hrs)||hrs<=0){ alert('Informe um número válido de horas.'); return; }
+  var k=heKey(menuAtivo.mi,menuAtivo.d,menuAtivo.key);
+  horasExtras[k]=hrs;
+  salvarHE();
+  closeMenu();
+  renderHE();
+  document.getElementById('unsavedBar').classList.add('show');
+}
+function limparHE(){
+  if(!menuAtivo) return;
+  var k=heKey(menuAtivo.mi,menuAtivo.d,menuAtivo.key);
+  delete horasExtras[k];
+  salvarHE();
+  closeMenu();
+  renderHE();
+}
+
+function edKey(mi, d, key){ return mi+'_'+d+'_'+key; }
+
+function getVal(mi, row, key){
+  var k = edKey(mi, row.d, key);
+  return edicoes.hasOwnProperty(k) ? edicoes[k] : (row[key]||'');
+}
+
+function carregarEdicoes(){
+  try{ edicoes = JSON.parse(localStorage.getItem('amparos_edicoes')||'{}'); }
+  catch(e){ edicoes={}; }
+  atualizarUndo();
+}
+
+function salvar(){
+  localStorage.setItem('amparos_edicoes', JSON.stringify(edicoes));
+  document.getElementById('unsavedBar').classList.remove('show');
+}
+
+function limparTudo(){
+  if(!confirm('Limpar todas as edições salvas e voltar para a escala original?')) return;
+  localStorage.removeItem('amparos_edicoes');
+  edicoes={}; historico=[];
+  atualizarUndo();
+  document.getElementById('unsavedBar').classList.remove('show');
+  render();
+}
+
+function resetTudo(){
+  if(!confirm('Voltar para a escala original? Todas as alterações serão perdidas.')) return;
+  edicoes={}; historico=[];
+  localStorage.removeItem('amparos_edicoes');
+  document.getElementById('unsavedBar').classList.remove('show');
+  atualizarUndo();
+  render();
+}
+
+function desfazer(){
+  if(!historico.length) return;
+  var last = historico.pop();
+  if(!last.antes||last.antes==='') delete edicoes[last.key];
+  else edicoes[last.key] = last.antes;
+  atualizarUndo();
+  if(!Object.keys(edicoes).length) document.getElementById('unsavedBar').classList.remove('show');
+  render();
+}
+
+function desfazerAte(idx){
+  // Desfaz todas as edições do idx em diante (mais recentes primeiro)
+  while(historico.length > idx+1){
+    var h=historico.pop();
+    if(!h.antes||h.antes==='') delete edicoes[h.key];
+    else edicoes[h.key]=h.antes;
+  }
+  // Desfazer a edição do idx também
+  var h=historico.pop();
+  if(!h.antes||h.antes==='') delete edicoes[h.key];
+  else edicoes[h.key]=h.antes;
+  atualizarUndo();
+  if(!Object.keys(edicoes).length) document.getElementById('unsavedBar').classList.remove('show');
+  render();
+}
+
+function atualizarUndo(){
+  var btn = document.getElementById('btnUndo');
+  if(!btn) return;
+  btn.disabled = historico.length === 0;
+  // Mostrar última edição no tooltip
+  if(historico.length > 0){
+    var last=historico[historico.length-1];
+    var antesLabel=last.antes||'(vazio)';
+    var depoisLabel=last.depois||'(vazio)';
+    btn.textContent = '↩ Desfazer ('+historico.length+')';
+    btn.title = last.nome+' — '+last.d+': "'+antesLabel+'" → "'+depoisLabel+'"';
+  } else {
+    btn.textContent = '↩ Desfazer';
+    btn.title = '';
+  }
+  // Atualizar log de edições
+  var logEl = document.getElementById('editLog');
+  if(!logEl) return;
+  if(historico.length===0){logEl.innerHTML='<span style="color:#8e8e93;font-size:11px;">Nenhuma edição nesta sessão.</span>';return;}
+  var html='';
+  for(var i=historico.length-1;i>=0;i--){
+    var h=historico[i];
+    var antes=h.antes||'(vazio)';
+    var depois=h.depois||'(vazio)';
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f2f2f7;font-size:12px;">';
+    html+='<span style="color:#6e6e73;min-width:24px;text-align:right;">'+(i+1)+'</span>';
+    html+='<div style="flex:1;">';
+    html+='<strong>'+h.nome+'</strong> &mdash; '+h.d;
+    html+='<div style="margin-top:2px;color:#6e6e73;"><span style="color:#b91c1c;">'+antes+'</span> &rarr; <span style="color:#15803d;">'+depois+'</span></div>';
+    html+='</div>';
+    html+='<button onclick="desfazerAte('+i+')" style="font-size:10px;color:#0369a1;background:none;border:none;cursor:pointer;padding:2px 6px;">↩ voltar</button>';
+    html+='</div>';
+  }
+  logEl.innerHTML=html;
+}
+
+function openMenu(el, mi, d, key, valAtual, e){
+  e.stopPropagation();
+  menuAtivo = {mi:mi, d:d, key:key, valAtual:valAtual};
+  var menu = document.getElementById('editMenu');
+  var title = document.getElementById('editMenuTitle');
+  // Encontrar nome da pessoa pelo key
+  var nome = Object.keys(KK).find(function(p){ return KK[p]===key; })||key;
+  title.textContent = nome+' — '+d;
+  // Limpar opções anteriores
+  document.getElementById('editMenuOpts').innerHTML = '';
+  OPCOES.forEach(function(o){
+    var ativo = o.v===valAtual;
+    var btn = document.createElement('button');
+    btn.className = 'edit-opt';
+    btn.style.cssText = ativo ? 'background:'+o.bg+';color:'+o.fg+';' : '';
+    btn.innerHTML = '<span class="edit-dot" style="background:'+o.bg+';border:1.5px solid '+o.fg+';"></span> '+o.l;
+    btn.addEventListener('click', (function(val){ return function(){ escolher(val); }; })(o.v));
+    document.getElementById('editMenuOpts').appendChild(btn);
+  });
+  // opts já adicionados no loop acima
+  var rect = el.getBoundingClientRect();
+  var top = rect.bottom+4, left = rect.left;
+  if(left+215>window.innerWidth) left=window.innerWidth-220;
+  if(top+380>window.innerHeight) top=rect.top-385;
+  menu.style.cssText='top:'+top+'px;left:'+left+'px;';
+  menu.classList.add('open');
+  document.getElementById('editOverlay').classList.add('open');
+  // Preencher horas extras existentes
+  var heK=heKey(mi,d,key);
+  var heExist=horasExtras[heK];
+  document.getElementById('heInput').value=heExist||'';
+}
+
+function closeMenu(){
+  document.getElementById('editMenu').classList.remove('open');
+  document.getElementById('editOverlay').classList.remove('open');
+  menuAtivo=null;
+}
+
+function escolher(val){
+  if(!menuAtivo) return;
+  var k = edKey(menuAtivo.mi, menuAtivo.d, menuAtivo.key);
+  var nome=Object.keys(KK).find(function(p){return KK[p]===menuAtivo.key;})||menuAtivo.key;
+  var antes=edicoes.hasOwnProperty(k)?edicoes[k]:AD[menuAtivo.mi].find(function(r){return r.d===menuAtivo.d;})[menuAtivo.key]||'';
+  historico.push({key:k, antes:antes, depois:val, nome:nome, d:menuAtivo.d, mi:menuAtivo.mi});
+  edicoes[k] = val;
+  closeMenu();
+  atualizarUndo();
+  document.getElementById('unsavedBar').classList.add('show');
+  render();
+}
+
+// ============================================================
+// BADGE
+// ============================================================
+function badge(v, p){
+  var L=LIDERS[p];
+  if(v==='_fds_lider') return '';  // Marina/Thamyres FDS: sem badge
+  if(!v||v===''){return L?'<span class="badge c-lid"><span class="bi">⭐</span><span class="bt">Liderança</span><span class="bh">sob demanda</span></span>':'';}
+  if(v==='Folga') return '<span class="badge c-folg"><span class="bt">— Folga</span></span>';
+
+  if(v==='Férias') return '<span class="badge c-fer"><span class="bi">🌴</span><span class="bt">Férias</span></span>';
+  if(v==='Feriado') return '<span class="badge c-folg"><span class="bi">&#x1F3DB;&#xFE0F;</span><span class="bt">Feriado</span><span class="bh">folga</span></span>';
+  if(v==='Feriado 12h') return '<span class="badge" style="background:#fdf2f8;border:1px solid #f0abfc;"><span class="bi">&#x1F3DB;&#xFE0F;</span><span class="bt">Feriado Trab.</span><span class="bh">12h | R$125,00</span></span>';
+  if(v==='Feriado 24h') return '<span class="badge" style="background:#fdf2f8;border:1px solid #f0abfc;"><span class="bi">&#x1F3DB;&#xFE0F;</span><span class="bt">Feriado Trab.</span><span class="bh">24h | R$250,00</span></span>';
+  if(v==='Falta') return '<span class="badge c-fal"><span class="bi">🤒</span><span class="bt">Falta</span></span>';
+  if(v==='Presencial') return L?'<span class="badge c-lid"><span class="bi">⭐</span><span class="bt">Liderança</span><span class="bh">presencial</span></span>':'<span class="badge c-pr817"><span class="bi">🏢</span><span class="bt">Presencial</span><span class="bh">08–17|alm 13–14</span></span>';
+  if(v.indexOf('05-14')>=0&&v.indexOf('Home')>=0) return '<span class="badge c-ho514"><span class="bi">🏠</span><span class="bt">Home Office</span><span class="bh">05–14|alm 11–12</span></span>';
+  if(v.indexOf('08-17')>=0&&v.indexOf('Home')>=0) return L?'<span class="badge c-lid"><span class="bi">⭐</span><span class="bt">Liderança</span><span class="bh">home 08–17</span></span>':'<span class="badge c-ho817"><span class="bi">🏠</span><span class="bt">Home Office</span><span class="bh">08–17|alm 13–14</span></span>';
+  if(v.indexOf('09-17')>=0&&v.indexOf('Home')>=0) return '<span class="badge c-ho918"><span class="bi">&#x1F3E0;</span><span class="bt">Home Office</span><span class="bh">09-17|alm 12:30-13:30</span></span>';
+  if(v.indexOf('09-17')>=0&&v.indexOf('Pres')>=0) return '<span class="badge c-pr918"><span class="bi">&#x1F3E2;</span><span class="bt">Presencial</span><span class="bh">09-17|alm 12:30-13:30</span></span>';
+  if(v.indexOf('09-18')>=0&&v.indexOf('Home')>=0) return '<span class="badge c-ho918"><span class="bi">🏠</span><span class="bt">Home Office</span><span class="bh">09–18|alm 12:30</span></span>';
+  if(v.indexOf('08-17')>=0&&v.indexOf('Pres')>=0) return '<span class="badge c-pr817"><span class="bi">🏢</span><span class="bt">Presencial</span><span class="bh">08–17|alm 13–14</span></span>';
+  if(v.indexOf('09-18')>=0&&v.indexOf('Pres')>=0) return '<span class="badge c-pr918"><span class="bi">🏢</span><span class="bt">Presencial</span><span class="bh">09–18|alm 12:30</span></span>';
+  return '<span class="badge c-folg"><span class="bt">'+v+'</span></span>';
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='benef') renderBenef();
+  if(id==='he') renderHE();
+}
+
+// ============================================================
+// VALIDAÇÃO
+// ============================================================
+var validOpen = true;
+function toggleValid(){
+  validOpen=!validOpen;
+  document.getElementById('validBody').style.display=validOpen?'':'none';
+  document.querySelector('.btn-collapse').textContent=validOpen?'Recolher':'Expandir';
+}
+
+function renderValid(mi){
+  var mn=MN[mi].split(' ')[0];
+  document.getElementById('validMes').textContent=mn+' 2026';
+  var data=getDataComEdicoes(mi);
+  var expM=EXP_MAP[mi]||{};
+  var FDS=['Indiara','Jana','Duda'];
+  var ADM=['Mariana','Paula','Karina'];
+  var th=function(t,r){return '<th'+(r?' style="text-align:right"':'')+'>'+t+'</th>';};
+  var hd='<tr>'+th('Colaboradora')+th('Dias Trab.',1)+th('Home Office',1)+th('Presencial',1)+th('Folgas',1)+th('Dom. Folga',1)+th('Status')+'</tr>';
+  document.getElementById('validHead').innerHTML=hd;
+  var rows='';
+  PEOPLE.forEach(function(p){
+    var key=KK[p], isL=!!LIDERS[p], isFDS=FDS.indexOf(p)>=0;
+    var hrs=0,ho=0,pr=0,folga=0,domF=0;
+    data.forEach(function(row){
+      var v=getVal(mi,row,key);
+      if(!v||v===''||v==='Folga'){if(v==='Folga')folga++;if(row.dia==='Dom'&&(!v||v===''||v==='Folga'))domF++;return;}
+      if(v==='Férias'){folga++;if(row.dia==='Dom')domF++;return;}
+      hrs+=8;
+      if(v.indexOf('Home')>=0||v==='Home')ho++;
+      else if(v.indexOf('Pres')>=0||v==='Presencial')pr++;
+      if(row.dia==='Dom'){}
+    });
+    // contar domingos de folga
+    domF=0;
+    data.forEach(function(row){
+      if(row.dia!=='Dom')return;
+      var v=getVal(mi,row,key);
+      if(!v||v===''||v==='Folga'||v==='Férias')domF++;
+    });
+    var exp=isL?null:expM[p]||null;
+    var diff=exp!==null?hrs-exp:null;
+    var statusTxt='✅ OK', statusBg='#f0fdf4', statusFg='#15803d';
+    if(isL){statusTxt='⭐ Sem controle';statusBg='#fef3c7';statusFg='#92400e';}
+    else if(isFDS){
+      if(domF===0){statusTxt='❌ Sem dom. folga';statusBg='#fef2f2';statusFg='#b91c1c';}
+    } else if(diff!==null){
+      if(diff>8){statusTxt='⚠️ +'+diff+'h extras';statusBg='#fffbeb';statusFg='#b45309';}
+      else if(diff<-8){statusTxt='❌ '+diff+'h faltando';statusBg='#fef2f2';statusFg='#b91c1c';}
+      if(domF===0&&p!=='Jaqueline'){statusTxt='❌ Sem dom. folga';statusBg='#fef2f2';statusFg='#b91c1c';}
+    }
+
+    rows+='<tr>';
+    rows+='<td><span class="dot" style="background:'+COLORS[p]+'"></span><strong>'+p+'</strong></td>';
+    rows+='<td style="text-align:right;">'+(isL?'—':hrs/8)+'</td>';
+    rows+='<td style="text-align:right;color:#0369a1;">'+(isL?'—':ho)+'</td>';
+    rows+='<td style="text-align:right;color:#15803d;">'+(isL?'—':pr)+'</td>';
+    rows+='<td style="text-align:right;">'+(isL?'—':folga)+'</td>';
+    rows+='<td style="text-align:right;">'+(isL?'—':domF)+'</td>';
+    rows+='<td><span class="status-tag" style="background:'+statusBg+';color:'+statusFg+';">'+statusTxt+'</span></td>';
+    rows+='</tr>';
+  });
+  document.getElementById('validRows').innerHTML=rows;
+}
+
+// ============================================================
+// CALENDÁRIO
+// ============================================================
+// Exceções de data de reunião (formato 'd/mm' -> 'dd/mm')
+// Normalmente é a 1ª quarta, mas pode ser customizado por mês
+var REUNIAO_CUSTOM = {
+  'Julho 2026': '08/07'
+};
+
+function fw(data){
+  // Verificar se há data customizada para este mês
+  var mn = data.length > 0 ? (function(){
+    var d = data[0].d;
+    var parts = d.split('/');
+    var mes = parseInt(parts[1]);
+    var MESES_PT = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return MESES_PT[mes] + ' 2026';
+  })() : '';
+  if(REUNIAO_CUSTOM[mn]){
+    var custom = REUNIAO_CUSTOM[mn];
+    for(var i=0;i<data.length;i++) if(data[i].d===custom) return custom;
+  }
+  // Padrão: 1ª quarta
+  for(var i=0;i<data.length;i++) if(data[i].dia==='Qua') return data[i].d;
+  return null;
+}
+
+function getDataComEdicoes(mi){
+  return AD[mi].map(function(row){return Object.assign({},row);});
+}
+
+function render(){
+  var mi=+document.getElementById('mSel').value;
+  var view=document.getElementById('vSel').value;
+  var data=AD[mi], mn=MN[mi];
+  document.getElementById('mTitle').textContent=mn;
+  var firstW=fw(data);
+  var pts=view==='all'?PEOPLE:[view];
+  renderValid(mi);
+
+  var DOW={Seg:0,Ter:1,Qua:2,Qui:3,Sex:4,Sab:5,Dom:6};
+  var fd=DOW[data[0].dia]||0;
+  var pad=[];for(var i=0;i<fd;i++)pad.push(null);
+  data.forEach(function(r){pad.push(r);});
+  while(pad.length%7)pad.push(null);
+  var weeks=[];for(var i=0;i<pad.length;i+=7)weeks.push(pad.slice(i,i+7));
+
+  var h='<div class="sep">'+mn+' — '+(view==='all'?'Visão geral da equipe':view)+'</div>';
+  h+='<div class="cal-header"><div></div>';
+  ['Seg','Ter','Qua','Qui','Sex','Sab','Dom'].forEach(function(d){
+    h+='<div style="'+(d==='Dom'||d==='Sab'?'color:#aeaeb2;':'')+'">'+(d==='Sab'?'Sáb':d)+'</div>';
+  });
+  h+='</div>';
+
+  weeks.forEach(function(week){
+    // linha de datas
+    h+='<div class="cal-row" style="min-height:22px;background:#fafafa;"><div class="rl" style="font-size:9px;color:#aeaeb2;font-weight:400;">data</div>';
+    week.forEach(function(day){
+      var isW=day&&(day.dia==='Dom'||day.dia==='Sab');
+      var isR=day&&day.d===firstW;
+      h+='<div class="cell'+(isW?' wk':'')+(isR?' rc':'')+'" style="cursor:default;">';
+      if(day){h+='<span class="dn">'+day.d.split('/')[0]+'</span>';h+='<span style="font-size:8px;color:#c5c5c7;">'+(day.dia==='Sab'?'Sáb':day.dia)+'</span>';if(isR)h+='<span class="rh">📋 Reunião</span>';}
+      h+='</div>';
+    });
+    h+='</div>';
+
+    // linhas de pessoas
+    pts.forEach(function(p){
+      // Separador entre equipe operacional e administrativa
+      if(p==='Mariana' && pts.indexOf('Marina')>=0){
+        h+='<div class="group-sep"><span class="group-sep-label">&#x1F4BC; Equipe Adm e RH</span></div>';
+      }
+      var key=KK[p];
+      var mi2=+document.getElementById('mSel').value;
+      h+='<div class="cal-row"><div class="rl"><span class="dot" style="background:'+COLORS[p]+'"></span>'+p+'</div>';
+      week.forEach(function(day){
+        var isW=day&&(day.dia==='Dom'||day.dia==='Sab');
+        var isR=day&&day.d===firstW;
+        var cellClass='cell'+(isW?' wk':'')+(isR?' rc':'');
+        if(day&&!isR){
+          var v=getVal(mi2,day,key);
+          // Marina e Thamyres: no FDS não mostrar "sob demanda", só plantão
+          if(isW&&(p==='Marina'||p==='Thamyres')&&(!v||v==='')) v='_fds_lider';
+          var ed=edicoes.hasOwnProperty(edKey(mi2,day.d,key));
+          h+='<div class="'+cellClass+'" data-mi="'+mi2+'" data-d="'+day.d+'" data-key="'+key+'">';
+          var quemEstende=(day.acao||'').split(' ')[0];
+          var keyMap={'Indiara':'I','Jana':'Ja','Duda':'Du'};
+          var hasCob=day.alerta&&keyMap[p]===quemEstende;
+          var cobBadge=hasCob?'<span class="badge-cob">🔄 estende 17h-18h</span>':'';
+          var keyMap2={'Indiara':'I','Jana':'Ja','Duda':'Du'};
+          var fdsBadge=(day['fds_'+keyMap2[p]]&&v==='Folga')?'<span class="badge-fds">🌟 FDS livre</span>':'';
+          h+='<div style="width:100%;display:flex;flex-direction:column;align-items:center;'+(ed?'outline:2px solid #3b82f6;outline-offset:-2px;border-radius:3px;':'')+'">'+badge(v,p)+cobBadge+fdsBadge+'</div>';
+        } else if(day&&isR){
+          var v=getVal(mi2,day,key);
+          var ed=edicoes.hasOwnProperty(edKey(mi2,day.d,key));
+          h+='<div class="'+cellClass+'" data-mi="'+mi2+'" data-d="'+day.d+'" data-key="'+key+'">';
+          var quemEstendeR=(day.acao||'').split(' ')[0];
+          var keyMapR={'Indiara':'I','Jana':'Ja','Duda':'Du'};
+          var hasCobR=day.alerta&&keyMapR[p]===quemEstendeR;
+          var cobBadgeR=hasCobR?'<span class="badge-cob">🔄 estende 17h-18h</span>':'';
+          var fdsBadgeR=(day['fds_'+keyMapR[p]]&&v==='Folga')?'<span class="badge-fds">🌟 FDS livre</span>':'';
+          // Badge especial para quem está em 05-14 na reunião
+          var reuExtra='<span class="badge c-reu" style="font-size:7px;padding:1px 4px;">📋 14h-17h</span>';
+          if(v&&v.indexOf('05-14')>=0) reuExtra+='<span style="font-size:7px;color:#6b7280;display:block;text-align:center;">⏰ para às 11h</span>';
+          h+='<div style="width:100%;display:flex;flex-direction:column;align-items:center;'+(ed?'outline:2px solid #3b82f6;outline-offset:-2px;border-radius:3px;':'')+'">'+badge(v,p)+cobBadgeR+fdsBadgeR+reuExtra+'</div>';
+        } else {
+          h+='<div class="'+cellClass+'" style="cursor:default;">';
+        }
+        h+='</div>';
+      });
+      h+='</div>';
+    });
+
+    // linha de plantão
+
+    
+    h+='<div class="sb-row"><div class="rl" style="font-size:9px;font-weight:400;color:#9ca3af;padding:3px 8px;border-right:1px solid #f2f2f7;">Plantão</div>';
+    week.forEach(function(day){
+      var isW=day&&(day.dia==='Dom'||day.dia==='Sab');
+      var isR=day&&day.d===firstW;
+      h+='<div class="cell'+(isW?' wk':'')+(isR?' rc':'')+'" style="cursor:default;">';
+      if(day&&isW&&(day.pt||day.pe)){
+        if(day.pt)h+='<span style="font-size:9px;color:#5b21b6;font-weight:600;">📲 '+day.pt.substring(0,6)+'</span>';
+        if(day.pe)h+='<span style="font-size:9px;color:#0369a1;font-weight:600;">🛡 '+day.pe.substring(0,6)+'</span>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+
+  document.getElementById('cal').innerHTML=h;
+}
+
+// ============================================================
+// BENEFÍCIOS
+// ============================================================
+function brl(v){return 'R$ '+v.toFixed(2).replace('.',',');}
+var TAG={Riocard:'tag-rc','Riocard físico':'tag-rf',Jaé:'tag-jae','Reembolso direto':'tag-rb'};
+
+function renderBenef(){
+  var mi=+document.getElementById('mSel').value;
+  var mn=MN[mi].split(' ')[0];
+  var data=BENEF[mn];
+  if(!data){document.getElementById('benefRows').innerHTML='<tr><td colspan="8" style="padding:20px;text-align:center;color:#6e6e73;">Sem dados</td></tr>';return;}
+  document.getElementById('benefHead').innerHTML='<tr><th>Colaboradora</th><th>Tipo VT</th><th style="text-align:right">Dias Trab.</th><th style="text-align:right">Dias Pres.</th><th style="text-align:right">Sodexo</th><th style="text-align:right">Vale Transporte</th><th style="text-align:right">Total</th><th>Obs</th></tr>';
+  var tot_s=0,tot_v=0,tot_t=0,rows='';
+  PEOPLE.forEach(function(p){
+    var r=data[p];if(!r)return;
+    tot_s+=r.sodexo;tot_v+=r.vt;tot_t+=r.total;
+    rows+='<tr><td><span class="dot" style="background:'+COLORS[p]+'"></span><strong>'+p+'</strong></td>';
+    rows+='<td><span class="tag '+(TAG[r.tipo_vt]||'tag-rc')+'">'+r.tipo_vt+'</span></td>';
+    rows+='<td style="text-align:right">'+r.dias_trab+'</td><td style="text-align:right">'+r.dias_pres+'</td>';
+    rows+='<td style="text-align:right">'+brl(r.sodexo)+'</td>';
+    rows+='<td style="text-align:right">'+(r.vt>0?brl(r.vt):'<span style="color:#aeaeb2">&#8212;</span>')+'</td>';
+    rows+='<td style="text-align:right"><strong>'+brl(r.total)+'</strong></td>';
+    rows+='<td style="font-size:10px;color:#b45309;font-style:italic;">'+(r.vt_obs||'')+'</td></tr>';
+  });
+  var totRow='<tr class="tot"><td colspan="4"><strong>Total</strong></td>'
+    +'<td style="text-align:right"><strong>'+brl(tot_s)+'</strong></td>'
+    +'<td style="text-align:right"><strong>'+brl(tot_v)+'</strong></td>'
+    +'<td style="text-align:right"><strong>'+brl(tot_t)+'</strong></td>'
+    +'<td></td></tr>';
+  document.getElementById('benefRows').innerHTML=rows;
+  document.getElementById('benefTots').innerHTML=totRow;
+  var totCards=document.getElementById('benefTotCards');
+  if(totCards){
+    totCards.innerHTML=
+      '<div class="total-card"><div class="tc-label">&#x1F37D; Total Sodexo</div><div class="tc-val">'+brl(tot_s)+'</div><div class="tc-sub">R$25,33 x dias trabalhados</div></div>'+
+      '<div class="total-card"><div class="tc-label">&#x1F68C; Total VT</div><div class="tc-val">'+brl(tot_v)+'</div><div class="tc-sub">Apenas dias presenciais</div></div>'+
+      '<div class="total-card"><div class="tc-label">&#x1F4B3; Total a Depositar</div><div class="tc-val" style="color:#15803d;">'+brl(tot_t)+'</div><div class="tc-sub">Sodexo + VT</div></div>';
+  }
+  var ferWrap=document.getElementById('feriadoWrap');
+  if(ferWrap){
+    var feriados=[];
+    AD[mi].forEach(function(row){
+      PEOPLE.forEach(function(p){
+        var v=getVal(mi,row,KK[p]);
+        if(v==='Feriado 12h'||v==='Feriado 24h'){
+          feriados.push({nome:p,d:row.d,dia:row.dia,jornada:v,valor:v==='Feriado 12h'?125:250});
+        }
+      });
+    });
+    if(feriados.length===0){
+      ferWrap.innerHTML='';
+    } else {
+      var totalFer=feriados.reduce(function(s,f){return s+f.valor;},0);
+      var fhtml='<div style="margin-top:16px;background:white;border-radius:12px;border:1.5px solid #f0abfc;overflow:hidden;">';
+      fhtml+='<div style="padding:12px 16px;background:#fdf2f8;border-bottom:1px solid #f0abfc;display:flex;justify-content:space-between;">';
+      fhtml+='<span style="font-weight:700;font-size:13px;color:#9d174d;">&#x1F3DB;&#xFE0F; Feriados Trabalhados</span>';
+      fhtml+='<span style="font-weight:800;color:#9d174d;">Total: R$'+brl(totalFer)+'</span>';
+      fhtml+='</div><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+      fhtml+='<tr style="background:#fdf2f8;"><th style="padding:8px 12px;text-align:left;">Colaboradora</th><th>Dia</th><th>Jornada</th><th style="text-align:right;padding-right:16px;">Valor</th></tr>';
+      feriados.forEach(function(f){
+        fhtml+='<tr style="border-top:1px solid #fce7f3;">';
+        fhtml+='<td style="padding:8px 12px;"><span class="dot" style="background:'+COLORS[f.nome]+'"></span><strong>'+f.nome+'</strong></td>';
+        fhtml+='<td style="padding:8px 12px;">'+f.d+' '+f.dia+'</td>';
+        fhtml+='<td style="padding:8px 12px;color:#9d174d;font-weight:600;">'+f.jornada+'</td>';
+        fhtml+='<td style="padding:8px 16px 8px 0;text-align:right;font-weight:700;color:#9d174d;">R$'+brl(f.valor)+'</td>';
+        fhtml+='</tr>';
+      });
+      fhtml+='</table></div>';
+      ferWrap.innerHTML=fhtml;
+    }
+  }
+}
+
+
+function renderHE(){
+  var mi=+document.getElementById('mSel').value;
+  var mn=MN[mi].split(' ')[0];
+  var data=AD[mi];
+  var wrap=document.getElementById('heWrap');
+  var FOLGA_VAL='Folga';
+
+  // 1. Acertos pontuais da escala base (coberturas +1h automáticas)
+  var acertos=ACERTOS[mi]||[];
+
+  // 2. Horas extras registradas manualmente
+  var manuais=[];
+  PEOPLE.forEach(function(p){
+    if(LIDERS[p]) return;
+    var key=KK[p];
+    data.forEach(function(row){
+      var k=heKey(mi,row.d,key);
+      if(horasExtras[k]){
+        manuais.push({d:row.d,dia:row.dia,quem:p,horas:horasExtras[k],desc:'Hora extra registrada manualmente'});
+      }
+    });
+  });
+
+  var todos=acertos.concat(manuais);
+
+  // Agrupar por pessoa
+  var resumo={};
+  todos.forEach(function(a){
+    if(!resumo[a.quem]) resumo[a.quem]={total:0,eventos:[]};
+    resumo[a.quem].total+=a.horas;
+    resumo[a.quem].eventos.push(a);
+  });
+
+  var html='';
+  html+='<div style="padding:14px 18px;background:#f5f5f7;border-bottom:1px solid #e5e5ea;">'
+    +'<span style="font-size:11px;font-weight:700;color:#6e6e73;text-transform:uppercase;letter-spacing:.4px;">⏱ Horas Extras a Pagar — '+mn+'</span>'
+    +'<div style="font-size:11px;color:#8e8e93;margin-top:3px;">Acertos pontuais do mês. Sem compensação — pagar no fechamento.</div>'
+    +'</div>';
+
+  if(todos.length===0){
+    html+='<div style="padding:32px;text-align:center;color:#8e8e93;font-size:13px;">✅ Nenhuma hora extra em '+mn+'</div>';
+  } else {
+    Object.keys(resumo).sort().forEach(function(nome){
+      var r=resumo[nome];
+      html+='<div style="margin:12px 16px;background:white;border-radius:10px;border:1px solid #e5e5ea;overflow:hidden;">';
+      html+='<div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:#fffbeb;border-bottom:1px solid #fef3c7;">'
+        +'<span style="font-weight:700;font-size:13px;">'+nome+'</span>'
+        +(r.total<=4?
+          '<span style="background:#dcfce7;color:#15803d;font-weight:700;padding:4px 12px;border-radius:6px;font-size:12px;">+'+r.total+'h (dentro das flutuantes)</span>':
+          '<span style="background:#f59e0b;color:white;font-weight:700;padding:4px 12px;border-radius:6px;font-size:12px;">+'+r.total+'h a pagar</span>')
+        +'</div>';
+      r.eventos.forEach(function(ev){
+        var isManual=ev.desc.indexOf('manual')>=0;
+        html+='<div style="padding:8px 14px;font-size:12px;color:#3c3c43;border-bottom:1px solid #f9f9f9;display:flex;justify-content:space-between;align-items:center;">'
+          +'<span>'+(isManual?'✏️ ':'🔄 ')+'<strong>'+ev.d+'</strong> '+ev.dia+' — '+ev.desc+'</span>'
+          +'<span style="font-weight:700;color:#b45309;">+'+ev.horas+'h</span>'
+          +'</div>';
+      });
+      html+='</div>';
+    });
+
+    // Total geral
+    var totalGeral=todos.reduce(function(s,a){return s+a.horas;},0);
+    html+='<div style="margin:0 16px 16px;padding:12px 14px;background:#fef3c7;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">'
+      +'<span style="font-weight:700;font-size:13px;color:#92400e;">Total a pagar em '+mn+'</span>'
+      +(totalGeral<=4?
+          '<span style="font-weight:800;font-size:15px;color:#15803d;">+'+totalGeral+'h (flutuantes)</span>':
+          '<span style="font-weight:800;font-size:15px;color:#b45309;">+'+totalGeral+'h a pagar</span>')
+      +'</div>';
+  }
+
+  wrap.innerHTML=html;
+}
+
+// ============================================================
+// EXPORTAR
+// ============================================================
+function exportarEquipe(){
+  var mi=+document.getElementById('mSel').value;
+  var mn=MN[mi];
+  var calDiv=document.getElementById('tab-cal');
+  var calHTML=calDiv?calDiv.innerHTML:'';
+  var styles='';
+  try{
+    for(var i=0;i<document.styleSheets.length;i++){
+      var rules=document.styleSheets[i].cssRules||[];
+      for(var j=0;j<rules.length;j++){styles+=rules[j].cssText+' ';}
+    }
+  }catch(e){}
+  var ocultados='.valid-wrap,.tabs,.export-btns,.unsaved-bar{display:none!important;}';
+  var html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Escala AMPAROS</title>'
+    +'<style>'+styles+ocultados+'</style>'
+    +'</head><body>'
+    +'<h1 style="font-size:18px;font-weight:700;padding:16px 20px;margin:0;">&#x1F4CB; Escala AMPAROS</h1>'
+    +'<div style="padding:0 20px 8px;font-size:14px;color:#6e6e73;">'+mn+'</div>'
+    +calHTML+'</body></html>';
+  var blob=new Blob([html],{type:'text/html'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='escala_equipe_'+mn.replace(/ /g,'_')+'.html';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function exportPDF(){
+  var s=document.createElement('style');
+  s.textContent='@media print{.controls,.export-btns,.unsaved-bar,.tabs,.legend,.edit-menu{display:none!important}body{padding:8px}button{display:none}}';
+  document.head.appendChild(s);
+  window.print();
+  setTimeout(function(){document.head.removeChild(s);},1000);
+}
+function exportExcel(){
+  var mi=+document.getElementById('mSel').value;
+  var data=AD[mi], mn=MN[mi];
+  var rows=[['Data','Dia','Jaqueline','Indiara','Jana','Duda','Beatriz','Thamyres','Marina','Plantão Tático','Plantão Estratégico']];
+  data.forEach(function(row){
+    rows.push([row.d,row.dia,getVal(mi,row,'J'),getVal(mi,row,'I'),getVal(mi,row,'Ja'),getVal(mi,row,'Du'),getVal(mi,row,'B'),getVal(mi,row,'T'),getVal(mi,row,'M'),row.pt||'',row.pe||'']);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:8},{wch:5},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:14},{wch:16}];
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,mn.replace(' ','_'));
+  XLSX.writeFile(wb,'Escala_AMPAROS_'+mn.replace(' ','_')+'.xlsx');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+// Versão dos dados — se mudou, limpa edições antigas incompatíveis
+var DADOS_VERSAO = '6cf66dd1';
+var versao_salva = localStorage.getItem('amparos_versao');
+if(versao_salva && versao_salva !== DADOS_VERSAO) {
+  console.log('Nova versão de escala detectada — limpando edições antigas');
+  localStorage.removeItem('amparos_edicoes');
+}
+localStorage.setItem('amparos_versao', DADOS_VERSAO);
+carregarEdicoes();
+render();
+
+// Event delegation para cliques nas células editáveis
+document.addEventListener('click', function(e){
+  var cell = e.target.closest('[data-d]');
+  if(!cell) return;
+  var mi = parseInt(cell.dataset.mi);
+  var d = cell.dataset.d;
+  var key = cell.dataset.key;
+  var mi2 = +document.getElementById('mSel').value;
+  var row = AD[mi2].find(function(r){return r.d===d;});
+  var val = row ? getVal(mi2,row,key) : '';
+  openMenu(cell, mi2, d, key, val, e);
+});
+</script>
+</body>
+</html>
