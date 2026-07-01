@@ -1,29 +1,25 @@
 {
   "edicoes": {
-    "0_11/07_Du": "Folga",
-    "0_12/07_Du": "09-18 Home Office",
-    "0_19/07_Du": "09-18 Home Office",
-    "0_24/07_Du": "09-18 Presencial",
-    "0_27/07_Du": "09-18 Presencial",
-    "0_05/07_Ja": "09-18 Home Office",
+    "0_04/07_I": "Folga",
+    "0_05/07_I": "08-17 Home Office",
+    "0_01/07_Ma": "09-18 Presencial",
+    "0_01/07_Pa": "09-18 Presencial",
+    "0_02/07_Ka": "09-18 Presencial",
     "0_07/07_Ja": "09-18 Presencial",
     "0_10/07_Ja": "08-17 Presencial",
     "0_11/07_Ja": "09-18 Home Office",
     "0_12/07_Ja": "Folga",
-    "0_26/07_Ja": "09-18 Home Office",
-    "0_04/07_I": "Folga",
-    "0_05/07_I": "08-17 Home Office",
+    "0_11/07_Du": "Folga",
+    "0_12/07_Du": "09-18 Home Office",
     "0_14/07_I": "08-17 Presencial",
     "0_15/07_I": "Folga",
-    "0_18/07_I": "09-18 Home Office",
-    "0_25/07_I": "09-18 Home Office",
+    "0_24/07_Du": "09-18 Presencial",
     "0_27/07_I": "08-17 Presencial",
+    "0_27/07_Du": "09-18 Presencial",
     "0_29/07_I": "Folga",
-    "0_01/07_Pa": "09-18 Presencial",
-    "0_02/07_Ka": "09-18 Presencial",
-    "0_01/07_Ma": "09-18 Presencial"
+    "0_30/07_I": "09-18 Presencial"
   },
   "heExtras": {},
-  "versao": "f0a454de",
-  "ts": "2026-07-01T18:06:50.303Z"
+  "versao": "ed168cbe",
+  "ts": "2026-07-01T18:43:37.675Z"
 }
