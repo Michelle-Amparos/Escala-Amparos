@@ -172,6 +172,38 @@ h1{font-size:19px;font-weight:700;margin-bottom:18px;}
   <div id="editLog"><span style="color:#8e8e93;font-size:11px;">Nenhuma edição nesta sessão.</span></div>
 </div>
 
+<!-- TELA DE CONFIGURAÇÃO INICIAL -->
+<div id="setupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:32px;max-width:460px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:32px;margin-bottom:8px;">☁️</div>
+      <div style="font-weight:800;font-size:18px;color:#1c1c1e;">Configuração inicial</div>
+      <div style="font-size:13px;color:#6e6e73;margin-top:6px;">Para sincronizar edições entre a equipe,<br>cole o token de acesso abaixo.</div>
+    </div>
+    <div style="background:#f5f5f7;border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;color:#3c3c43;line-height:1.6;">
+      <strong>O que é isso?</strong> Um código que permite salvar e carregar edições da escala automaticamente. Você recebe esse código com a Michelle.
+    </div>
+    <input id="setupToken" type="password" placeholder="Cole o token aqui (ghp_...)"
+      style="width:100%;box-sizing:border-box;border:1.5px solid #e5e5ea;border-radius:10px;padding:12px 14px;font-size:13px;outline:none;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')salvarToken()">
+    <button onclick="salvarToken()" style="width:100%;background:#1d4ed8;color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">
+      Confirmar e entrar
+    </button>
+    <button onclick="entrarSemToken()" style="width:100%;background:none;border:none;color:#6e6e73;font-size:12px;cursor:pointer;margin-top:10px;padding:6px;">
+      Entrar sem sincronização (só visualizar)
+    </button>
+  </div>
+</div>
+
+<div id="ghBar" style="background:#f0fdf4;border-bottom:1px solid #86efac;padding:6px 16px;display:flex;align-items:center;gap:10px;font-size:12px;">
+  <span style="font-weight:700;color:#15803d;">☁️ GitHub Sync</span>
+  <span id="ghStatus" style="color:#6e6e73;flex:1;"></span>
+  <button onclick="carregarDoGH()" style="background:white;border:1px solid #86efac;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#15803d;font-weight:600;">⬇ Carregar da nuvem</button>
+  <button onclick="sincronizarGH()" style="background:#15803d;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600;">⬆ Salvar na nuvem</button>
+  <button onclick="localStorage.removeItem('gh_token');GH_CONFIG.token='';document.getElementById('setupOverlay').style.display='flex';" style="background:white;border:1px solid #d1d5db;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:#6b7280;">⚙ Reconfigurar</button>
+
+</div>
+
 <div class="unsaved-bar" id="unsavedBar">
   <span>&#x270F;&#xFE0F; Alterações não salvas</span>
   <button class="btn-undo" id="btnUndo" onclick="desfazer()" disabled>&#x21A9; Desfazer</button>
@@ -246,6 +278,9 @@ h1{font-size:19px;font-weight:700;margin-bottom:18px;}
 <!-- TAB BENEFÍCIOS -->
 <div id="tab-benef" class="tab-panel">
   <div id="feriadoWrap"></div>
+  <div style="margin:12px 16px 0;display:flex;justify-content:flex-end;">
+    <button onclick="fecharMes()" style="background:#0369a1;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;">📅 Fechar Mês — carregar saldo no próximo</button>
+  </div>
 <div class="benef-wrap"><table class="benef-table"><thead id="benefHead"></thead><tbody id="benefRows"></tbody></table></div>
   <div class="total-cards" id="benefTotais"></div>
   <div style="margin:20px 16px 0;background:white;border-radius:12px;border:1px solid #e5e5ea;overflow:hidden;">
@@ -416,6 +451,8 @@ function carregarEdicoes(){
 
 function salvar(){
   localStorage.setItem('amparos_edicoes', JSON.stringify(edicoes));
+  // Auto-sync com GitHub se token configurado
+  if(GH_CONFIG.token && ghAutoSync) setTimeout(sincronizarGH, 500);
   document.getElementById('unsavedBar').classList.remove('show');
 }
 
@@ -799,16 +836,65 @@ function renderBenef(){
   if(!data){document.getElementById('benefRows').innerHTML='<tr><td colspan="8" style="padding:20px;text-align:center;color:#6e6e73;">Sem dados</td></tr>';return;}
   document.getElementById('benefHead').innerHTML='<tr><th>Colaboradora</th><th>Tipo VT</th><th style="text-align:right">Dias Trab.</th><th style="text-align:right">Dias Pres.</th><th style="text-align:right">Sodexo</th><th style="text-align:right">Vale Transporte</th><th style="text-align:right">Total</th><th>Obs</th></tr>';
   var tot_s=0,tot_v=0,tot_t=0,rows='';
+  // Carregar ajustes do mês anterior (saldo)
+  var saldoKey='saldo_m'+mi;
+  var saldoAnterior=JSON.parse(localStorage.getItem(saldoKey)||'{}');
+
   PEOPLE.forEach(function(p){
     var r=data[p];if(!r)return;
-    tot_s+=r.sodexo;tot_v+=r.vt;tot_t+=r.total;
-    rows+='<tr><td><span class="dot" style="background:'+COLORS[p]+'"></span><strong>'+p+'</strong></td>';
+    var key=KK[p];
+    // Recalcular com edições aplicadas
+    var escala_mi=AD[mi];
+    var dias_trab_ed=0,dias_pres_ed=0,fer_extra_ed=0;
+    escala_mi.forEach(function(row){
+      var v=getVal(mi,row,key);
+      if(!v||v===''||v==='Folga') return;
+      if(v==='Férias') return;
+      dias_trab_ed++;
+      if(v.indexOf('Pres')>=0) dias_pres_ed++;
+      if(v==='Feriado 12h') fer_extra_ed+=125;
+      if(v==='Feriado 24h') fer_extra_ed+=250;
+    });
+    var sodexo_ed=Math.round(dias_trab_ed*25.33*100)/100;
+    var vt_unit=r.vt>0&&r.dias_pres>0?Math.round(r.vt/r.dias_pres*100)/100:0;
+    var vt_ed=Math.round(dias_pres_ed*vt_unit*100)/100;
+    var total_ed=Math.round((sodexo_ed+vt_ed+fer_extra_ed)*100)/100;
+
+    // Diferença vs valor base
+    var diff_s=Math.round((sodexo_ed-r.sodexo)*100)/100;
+    var diff_v=Math.round((vt_ed-r.vt)*100)/100;
+    var diff_t=Math.round((total_ed-r.total)*100)/100;
+
+    // Saldo do mês anterior
+    var saldo_p=saldoAnterior[p]||0;
+
+    tot_s+=sodexo_ed;tot_v+=vt_ed;tot_t+=total_ed;
+
+    var diffSTag=diff_s===0?'':diff_s>0?
+      '<span style="color:#15803d;font-size:10px;"> (+'+brl(diff_s)+')</span>':
+      '<span style="color:#b91c1c;font-size:10px;"> ('+brl(diff_s)+')</span>';
+    var diffVTag=diff_v===0?'':diff_v>0?
+      '<span style="color:#15803d;font-size:10px;"> (+'+brl(diff_v)+')</span>':
+      '<span style="color:#b91c1c;font-size:10px;"> ('+brl(diff_v)+')</span>';
+    var diffTTag=diff_t===0?'':diff_t>0?
+      '<span style="color:#15803d;font-weight:700;font-size:11px;"> ▲ pagar +'+brl(diff_t)+'</span>':
+      '<span style="color:#b91c1c;font-weight:700;font-size:11px;"> ▼ abater '+brl(Math.abs(diff_t))+'</span>';
+    var saldoTag=saldo_p===0?'':saldo_p>0?
+      '<div style="font-size:10px;color:#0369a1;margin-top:2px;">💳 saldo anterior: +'+brl(saldo_p)+'</div>':
+      '<div style="font-size:10px;color:#b91c1c;margin-top:2px;">💳 saldo anterior: '+brl(saldo_p)+'</div>';
+
+    rows+='<tr><td><span class="dot" style="background:'+COLORS[p]+'"></span><strong>'+p+'</strong>'+saldoTag+'</td>';
     rows+='<td><span class="tag '+(TAG[r.tipo_vt]||'tag-rc')+'">'+r.tipo_vt+'</span></td>';
-    rows+='<td style="text-align:right">'+r.dias_trab+'</td><td style="text-align:right">'+r.dias_pres+'</td>';
-    rows+='<td style="text-align:right">'+brl(r.sodexo)+'</td>';
-    rows+='<td style="text-align:right">'+(r.vt>0?brl(r.vt):'<span style="color:#aeaeb2">&#8212;</span>')+'</td>';
-    rows+='<td style="text-align:right"><strong>'+brl(r.total)+'</strong></td>';
+    rows+='<td style="text-align:right">'+dias_trab_ed+(dias_trab_ed!==r.dias_trab?'<span style="font-size:10px;color:#6e6e73;"> (base:'+r.dias_trab+')</span>':'')+'</td>';
+    rows+='<td style="text-align:right">'+dias_pres_ed+(dias_pres_ed!==r.dias_pres?'<span style="font-size:10px;color:#6e6e73;"> (base:'+r.dias_pres+')</span>':'')+'</td>';
+    rows+='<td style="text-align:right">'+brl(sodexo_ed)+diffSTag+'</td>';
+    rows+='<td style="text-align:right">'+(vt_ed>0?brl(vt_ed)+''+diffVTag:'<span style="color:#aeaeb2">&#8212;</span>')+'</td>';
+    rows+='<td style="text-align:right"><strong>'+brl(total_ed)+'</strong>'+diffTTag+'</td>';
     rows+='<td style="font-size:10px;color:#b45309;font-style:italic;">'+(r.vt_obs||'')+'</td></tr>';
+
+    // Guardar diferença para uso no botão de fechar mês
+    if(!window._diffBenef) window._diffBenef={};
+    window._diffBenef[p]=diff_t;
   });
   var totRow='<tr class="tot"><td colspan="4"><strong>Total</strong></td>'
     +'<td style="text-align:right"><strong>'+brl(tot_s)+'</strong></td>'
@@ -859,6 +945,33 @@ function renderBenef(){
   }
 }
 
+
+function fecharMes(){
+  var mi=+document.getElementById('mSel').value;
+  if(mi>=5){ alert('Dezembro é o último mês disponível.'); return; }
+  var mn=MN[mi].split(' ')[0];
+  if(!window._diffBenef||Object.keys(window._diffBenef).length===0){
+    alert('Nenhuma diferença de benefícios encontrada em '+mn+'. Nada a transferir.'); return;
+  }
+  var resumo=[];
+  Object.keys(window._diffBenef).forEach(function(p){
+    var d=window._diffBenef[p];
+    if(d!==0) resumo.push(p+': '+(d>0?'+':'')+brl(d));
+  });
+  if(resumo.length===0){ alert('Sem diferenças em '+mn+'.'); return; }
+  if(!confirm('Fechar '+mn+' e carregar as seguintes diferenças no mês seguinte?\n\n'+resumo.join('\n')+'\n\nEsta ação pode ser desfeita limpando o saldo no mês seguinte.')) return;
+  var saldoKey='saldo_m'+(mi+1);
+  var saldoAtual=JSON.parse(localStorage.getItem(saldoKey)||'{}');
+  Object.keys(window._diffBenef).forEach(function(p){
+    saldoAtual[p]=(saldoAtual[p]||0)+window._diffBenef[p];
+    saldoAtual[p]=Math.round(saldoAtual[p]*100)/100;
+  });
+  localStorage.setItem(saldoKey,JSON.stringify(saldoAtual));
+  // Ir para o próximo mês
+  document.getElementById('mSel').value=mi+1;
+  render(); renderBenef();
+  alert('Saldo de '+mn+' carregado em '+MN[mi+1].split(' ')[0]+'! \nAparece na coluna de cada colaboradora.');
+}
 
 function renderHE(){
   var mi=+document.getElementById('mSel').value;
@@ -988,7 +1101,141 @@ function exportExcel(){
 // INIT
 // ============================================================
 // Versão dos dados — se mudou, limpa edições antigas incompatíveis
-var DADOS_VERSAO = '8be256b3';
+
+// ============================================================
+// GITHUB SYNC
+// ============================================================
+var GH_CONFIG = {
+  token: localStorage.getItem('gh_token')||'',
+  owner: 'Michelle-Amparos',
+  repo: 'Escala-Amparos',
+  file: 'edicoes.json'
+};
+
+function ghSalvar(dados, callback){
+  if(!GH_CONFIG.token){ callback&&callback(false,'sem token'); return; }
+  var url='https://api.github.com/repos/'+GH_CONFIG.owner+'/'+GH_CONFIG.repo+'/contents/'+GH_CONFIG.file;
+  // Buscar SHA atual
+  fetch(url,{headers:{'Authorization':'token '+GH_CONFIG.token,'Accept':'application/vnd.github.v3+json'}})
+  .then(function(r){return r.json();})
+  .then(function(info){
+    var sha=info.sha||undefined;
+    var content=btoa(unescape(encodeURIComponent(JSON.stringify(dados,null,2))));
+    var body={message:'Atualização escala '+new Date().toLocaleDateString('pt-BR'),content:content};
+    if(sha) body.sha=sha;
+    return fetch(url,{method:'PUT',headers:{'Authorization':'token '+GH_CONFIG.token,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},body:JSON.stringify(body)});
+  })
+  .then(function(r){return r.json();})
+  .then(function(res){
+    if(res.content){ callback&&callback(true); }
+    else { callback&&callback(false, JSON.stringify(res)); }
+  })
+  .catch(function(e){ callback&&callback(false,e.message); });
+}
+
+function ghCarregar(callback){
+  if(!GH_CONFIG.token){ callback&&callback(null,'sem token'); return; }
+  var url='https://api.github.com/repos/'+GH_CONFIG.owner+'/'+GH_CONFIG.repo+'/contents/'+GH_CONFIG.file;
+  fetch(url,{headers:{'Authorization':'token '+GH_CONFIG.token,'Accept':'application/vnd.github.v3+json'}})
+  .then(function(r){return r.json();})
+  .then(function(info){
+    if(!info.content){ callback&&callback(null,'arquivo não encontrado'); return; }
+    var decoded=decodeURIComponent(escape(atob(info.content.replace(/\n/g,''))));
+    callback&&callback(JSON.parse(decoded));
+  })
+  .catch(function(e){ callback&&callback(null,e.message); });
+}
+
+function salvarToken(){
+  var t=document.getElementById('setupToken').value.trim();
+  if(!t||!t.startsWith('ghp_')){ alert('Token inválido. Deve começar com ghp_'); return; }
+  localStorage.setItem('gh_token',t);
+  GH_CONFIG.token=t;
+  document.getElementById('setupOverlay').style.display='none';
+  // Tentar carregar edições da nuvem automaticamente
+  var statusEl=document.getElementById('ghStatus');
+  if(statusEl) statusEl.textContent='☁️ Carregando edições...';
+  ghCarregar(function(dados,err){
+    if(dados && dados.versao===DADOS_VERSAO){
+      edicoes=dados.edicoes||{};
+      horasExtras=dados.heExtras||{};
+      localStorage.setItem('amparos_edicoes',JSON.stringify(edicoes));
+      localStorage.setItem('amparos_he',JSON.stringify(horasExtras));
+      render(); renderHE(); renderBenef();
+      if(statusEl) statusEl.textContent='✅ Pronto! Edições carregadas.';
+    } else {
+      if(statusEl) statusEl.textContent='✅ Token configurado!';
+    }
+    setTimeout(function(){if(statusEl)statusEl.textContent='';},3000);
+  });
+}
+
+function entrarSemToken(){
+  document.getElementById('setupOverlay').style.display='none';
+}
+
+function verificarSetup(){
+  // Mostrar tela de setup se não tem token configurado
+  if(!localStorage.getItem('gh_token')){
+    document.getElementById('setupOverlay').style.display='flex';
+  } else {
+    GH_CONFIG.token=localStorage.getItem('gh_token');
+    // Auto-carregar da nuvem
+    ghCarregar(function(dados,err){
+      if(dados && dados.versao===DADOS_VERSAO){
+        var remoto=JSON.stringify(dados.edicoes||{});
+        var local=JSON.stringify(edicoes);
+        if(remoto!==local){
+          // Há diferença — perguntar qual usar
+          var statusEl=document.getElementById('ghStatus');
+          if(statusEl) statusEl.innerHTML='☁️ Há edições na nuvem. <button onclick="carregarDoGH()" style="background:#15803d;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px;">Carregar</button> <button onclick="sincronizarGH()" style="background:#0369a1;color:white;border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px;">Manter minhas</button>';
+        }
+      }
+    });
+  }
+}
+
+function sincronizarGH(){
+  var statusEl=document.getElementById('ghStatus');
+  if(statusEl) statusEl.textContent='☁️ Sincronizando...';
+  var payload={edicoes:edicoes, heExtras:horasExtras, versao:DADOS_VERSAO, ts:new Date().toISOString()};
+  ghSalvar(payload,function(ok,err){
+    if(statusEl) statusEl.textContent=ok?'✅ Salvo na nuvem':'❌ Erro: '+err;
+    setTimeout(function(){if(statusEl)statusEl.textContent='';},4000);
+  });
+}
+
+function carregarDoGH(){
+  var statusEl=document.getElementById('ghStatus');
+  if(statusEl) statusEl.textContent='☁️ Carregando...';
+  ghCarregar(function(dados,err){
+    if(!dados){ if(statusEl)statusEl.textContent='❌ '+err; return; }
+    if(dados.versao!==DADOS_VERSAO){
+      if(!confirm('Os dados da nuvem são de uma versão diferente. Carregar mesmo assim?')) return;
+    }
+    edicoes=dados.edicoes||{};
+    horasExtras=dados.heExtras||{};
+    localStorage.setItem('amparos_edicoes',JSON.stringify(edicoes));
+    localStorage.setItem('amparos_he',JSON.stringify(horasExtras));
+    render(); renderHE(); renderBenef();
+    if(statusEl) statusEl.textContent='✅ Carregado da nuvem';
+    setTimeout(function(){if(statusEl)statusEl.textContent='';},3000);
+  });
+}
+
+function configurarToken(){
+  var t=prompt('Cole seu GitHub Personal Access Token (classic, escopo: repo):');
+  if(t&&t.trim()){
+    GH_CONFIG.token=t.trim();
+    localStorage.setItem('gh_token',t.trim());
+    alert('Token salvo! Agora pode sincronizar.');
+  }
+}
+
+// Auto-sync: sempre que salvar edições, sincronizar com GitHub
+var ghAutoSync=localStorage.getItem('gh_autosync')!=='false';
+
+var DADOS_VERSAO = 'f0a454de';
 var versao_salva = localStorage.getItem('amparos_versao');
 if(versao_salva && versao_salva !== DADOS_VERSAO) {
   console.log('Nova versão de escala detectada — limpando edições antigas');
@@ -997,6 +1244,7 @@ if(versao_salva && versao_salva !== DADOS_VERSAO) {
 localStorage.setItem('amparos_versao', DADOS_VERSAO);
 carregarEdicoes();
 render();
+verificarSetup();
 
 // Event delegation para cliques nas células editáveis
 document.addEventListener('click', function(e){
