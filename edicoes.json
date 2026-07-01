@@ -4,7 +4,6 @@
     "0_05/07_I": "08-17 Home Office",
     "0_01/07_Ma": "09-18 Presencial",
     "0_01/07_Pa": "09-18 Presencial",
-    "0_02/07_Ka": "09-18 Presencial",
     "0_07/07_Ja": "09-18 Presencial",
     "0_10/07_Ja": "08-17 Presencial",
     "0_11/07_Ja": "09-18 Home Office",
@@ -17,9 +16,11 @@
     "0_27/07_I": "08-17 Presencial",
     "0_27/07_Du": "09-18 Presencial",
     "0_29/07_I": "Folga",
-    "0_30/07_I": "09-18 Presencial"
+    "0_30/07_I": "09-18 Presencial",
+    "0_16/07_Du": "Folga",
+    "0_15/07_Du": "09-18 Presencial"
   },
   "heExtras": {},
   "versao": "ed168cbe",
-  "ts": "2026-07-01T18:47:38.977Z"
+  "ts": "2026-07-01T18:48:02.002Z"
 }
