@@ -360,6 +360,7 @@ var OPCOES = [
   // Outros
   {l:'🌴 Férias',              v:'Férias',             bg:'#ede9fe', fg:'#5b21b6'},
   {l:'🤒 Falta',               v:'Falta',              bg:'#fce7f3', fg:'#9d174d'},
+  {l:'📋 Atestado',             v:'Atestado',           bg:'#fef3c7', fg:'#92400e'},
   {l:'— Folga',                v:'Folga',              bg:'#f3f4f6', fg:'#6b7280'},
   {l:'🏛️ Feriado',           v:'Feriado',            bg:'#fef3c7', fg:'#92400e'},
   {l:'🏛️ Feriado Trab. 12h',  v:'Feriado 12h',        bg:'#fce7f3', fg:'#9d174d'},
@@ -587,6 +588,7 @@ function badge(v, p){
   if(v==='Feriado 12h') return '<span class="badge" style="background:#fdf2f8;border:1px solid #f0abfc;"><span class="bi">&#x1F3DB;&#xFE0F;</span><span class="bt">Feriado Trab.</span><span class="bh">12h | R$125,00</span></span>';
   if(v==='Feriado 24h') return '<span class="badge" style="background:#fdf2f8;border:1px solid #f0abfc;"><span class="bi">&#x1F3DB;&#xFE0F;</span><span class="bt">Feriado Trab.</span><span class="bh">24h | R$250,00</span></span>';
   if(v==='Falta') return '<span class="badge c-fal"><span class="bi">🤒</span><span class="bt">Falta</span></span>';
+  if(v==='Atestado') return '<span class="badge" style="background:#fef3c7;border:1px solid #fde68a;"><span class="bi">📋</span><span class="bt">Atestado</span></span>';
   if(v==='Presencial') return L?'<span class="badge c-lid"><span class="bi">⭐</span><span class="bt">Liderança</span><span class="bh">presencial</span></span>':'<span class="badge c-pr817"><span class="bi">🏢</span><span class="bt">Presencial</span><span class="bh">08–17|alm 12–13</span></span>';
   if(v.indexOf('05-14')>=0&&v.indexOf('Home')>=0) return '<span class="badge c-ho514"><span class="bi">🏠</span><span class="bt">Home Office</span><span class="bh">05–14|alm 11–12</span></span>';
   if(v.indexOf('08-12')>=0) return '<span class="badge c-ho817"><span class="bi">🏠</span><span class="bt">Home Office</span><span class="bh">08–12 | 4h</span></span>';
@@ -1611,7 +1613,7 @@ function configurarToken(){
 // Auto-sync: sempre que salvar edições, sincronizar com GitHub
 var ghAutoSync=localStorage.getItem('gh_autosync')!=='false';
 
-var DADOS_VERSAO = '803b1a93';
+var DADOS_VERSAO = '71f5a15c';
 var versao_salva = localStorage.getItem('amparos_versao');
 if(versao_salva && versao_salva !== DADOS_VERSAO) {
   console.log('Nova versão de escala detectada — limpando edições antigas');
