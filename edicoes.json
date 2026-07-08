@@ -1,6 +1,9 @@
 {
-  "edicoes": {},
+  "edicoes": {
+    "0_06/07_I": "Atestado",
+    "0_07/07_I": "Atestado"
+  },
   "heExtras": {},
   "versao": "71f5a15c",
-  "ts": "2026-07-08T15:52:18.368Z"
+  "ts": "2026-07-08T15:57:53.482Z"
 }
