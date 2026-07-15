@@ -63,12 +63,13 @@
     "1_25/08_M": "Presencial",
     "1_26/08_M": "Presencial",
     "1_27/08_M": "Presencial",
-    "1_28/08_M": "Presencial"
+    "1_28/08_M": "Presencial",
+    "1_04/08_I": "09-18 Presencial"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
     "he_0_09/07_Du": 1
   },
   "versao": "80f14982",
-  "ts": "2026-07-15T19:56:34.031Z"
+  "ts": "2026-07-15T19:59:08.402Z"
 }
