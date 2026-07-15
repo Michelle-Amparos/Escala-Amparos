@@ -1,33 +1,28 @@
 {
   "edicoes": {
+    "0_04/07_I": "Folga",
+    "0_05/07_I": "Atestado",
     "0_06/07_I": "Atestado",
     "0_07/07_I": "Atestado",
     "0_09/07_I": "Atestado",
-    "0_07/07_Ja": "09-18 Presencial",
-    "0_10/07_Ja": "08-17 Presencial",
-    "0_11/07_Ja": "09-18 Home Office",
-    "0_12/07_Ja": "Folga",
-    "0_04/07_I": "Folga",
-    "0_05/07_I": "Atestado",
     "0_14/07_I": "08-17 Presencial",
     "0_15/07_I": "Folga",
-    "0_27/07_I": "08-17 Presencial",
     "0_29/07_I": "Folga",
     "0_30/07_I": "09-18 Presencial",
+    "0_07/07_Ja": "09-18 Presencial",
+    "0_10/07_Ja": "08-17 Presencial",
+    "0_12/07_Ja": "Folga",
+    "0_13/07_Ja": "09-18 Presencial",
+    "0_16/07_Ja": "09-18 Presencial",
     "0_11/07_Du": "Folga",
     "0_12/07_Du": "09-18 Home Office",
     "0_24/07_Du": "09-18 Presencial",
-    "0_27/07_Du": "09-18 Presencial",
-    "0_16/07_Ja": "09-18 Presencial",
-    "0_20/07_I": "09-18 Presencial",
-    "0_13/07_Ja": "09-18 Presencial",
-    "0_14/07_B": "08-17 Presencial",
-    "0_15/07_B": "08-17 Home Office"
+    "0_27/07_Du": "09-18 Presencial"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
     "he_0_09/07_Du": 1
   },
-  "versao": "089aa849",
-  "ts": "2026-07-15T19:32:14.926Z"
+  "versao": "80f14982",
+  "ts": "2026-07-15T19:32:21.323Z"
 }
