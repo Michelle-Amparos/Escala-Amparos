@@ -796,10 +796,11 @@ function render(){
               cobBadge='<span class="badge-cob">🔄 estende 17h-18h</span>';
             }
           }
-          // FDS livre badge dinâmico: verifica se Sab+Dom ambos são Folga para essa pessoa
+          // FDS livre badge dinâmico: apenas para I/Ja/Du (rodízio)
           var keyMap2={'Indiara':'I','Jana':'Ja','Duda':'Du'};
           var fdsBadge='';
-          if(v==='Folga'&&(day.dia==='Sab'||day.dia==='Dom')){
+          var isRodizio=(p==='Indiara'||p==='Jana'||p==='Duda');
+          if(isRodizio&&v==='Folga'&&(day.dia==='Sab'||day.dia==='Dom')){
             var keyFds=keyMap2[p];
             // Encontrar o par Sab+Dom desta semana
             var escFds=AD[mi2];
@@ -1632,7 +1633,7 @@ function configurarToken(){
 // Auto-sync: sempre que salvar edições, sincronizar com GitHub
 var ghAutoSync=localStorage.getItem('gh_autosync')!=='false';
 
-var DADOS_VERSAO = 'ca7ff1df';
+var DADOS_VERSAO = '24a95d2a';
 var versao_salva = localStorage.getItem('amparos_versao');
 if(versao_salva && versao_salva !== DADOS_VERSAO) {
   console.log('Nova versão de escala detectada — limpando edições antigas');
