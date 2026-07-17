@@ -1,9 +1,18 @@
 {
-  "edicoes": {},
+  "edicoes": {
+    "0_06/07_I": "Atestado",
+    "0_07/07_I": "Atestado",
+    "0_09/07_I": "Atestado",
+    "0_04/07_I": "Folga",
+    "0_05/07_I": "Atestado",
+    "0_11/07_Du": "Folga",
+    "0_12/07_Du": "08-17 Home Office",
+    "0_12/07_Ja": "Folga"
+  },
   "heExtras": {
     "he_0_07/07_B": 3,
     "he_0_09/07_Du": 1
   },
   "versao": "a3368322",
-  "ts": "2026-07-17T18:25:02.127Z"
+  "ts": "2026-07-17T18:30:42.878Z"
 }
