@@ -832,7 +832,21 @@ function render(){
               cobBadgeR='<span class="badge-cob">🔄 estende 17h-18h</span>';
             }
           }
-          var fdsBadgeR=(day['fds_'+keyMapR[p]]&&v==='Folga')?'<span class="badge-fds">🌟 FDS livre</span>':'';
+          // FDS livre badge no dia de reunião — apenas I/Ja/Du
+          var fdsBadgeR='';
+          var isRodizioR=(p==='Indiara'||p==='Jana'||p==='Duda');
+          if(isRodizioR&&v==='Folga'&&(day.dia==='Sab'||day.dia==='Dom')){
+            var keyFdsR=keyMapR[p];
+            var escFdsR=AD[mi2];
+            var numCurR=parseInt(day.d);
+            var parNumR=day.dia==='Sab'?numCurR+1:numCurR-1;
+            var parRowR=escFdsR.find(function(r){return parseInt(r.d)===parNumR;});
+            var parDiaR=day.dia==='Sab'?'Dom':'Sab';
+            if(parRowR&&parRowR.dia===parDiaR){
+              var parValR=getVal(mi2,parRowR,keyFdsR);
+              if(parValR===''||parValR==='Folga') fdsBadgeR='<span class="badge-fds">🌟 FDS livre</span>';
+            }
+          }
           // Badge especial para quem está em 05-14 na reunião
           var reuExtra='<span class="badge c-reu" style="font-size:7px;padding:1px 4px;">📋 14h-17h</span>';
           if(v&&v.indexOf('05-14')>=0) reuExtra+='<span style="font-size:7px;color:#6b7280;display:block;text-align:center;">⏰ para às 11h</span>';
@@ -1633,7 +1647,7 @@ function configurarToken(){
 // Auto-sync: sempre que salvar edições, sincronizar com GitHub
 var ghAutoSync=localStorage.getItem('gh_autosync')!=='false';
 
-var DADOS_VERSAO = '24a95d2a';
+var DADOS_VERSAO = '6730cbfc';
 var versao_salva = localStorage.getItem('amparos_versao');
 if(versao_salva && versao_salva !== DADOS_VERSAO) {
   console.log('Nova versão de escala detectada — limpando edições antigas');
