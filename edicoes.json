@@ -12,12 +12,17 @@
     "0_10/07_Ja": "08-17 Presencial",
     "0_11/07_Du": "Folga",
     "0_12/07_Du": "09-18 Home Office",
-    "0_12/07_Ja": "Folga"
+    "0_12/07_Ja": "Folga",
+    "1_03/08_M": "Presencial",
+    "1_04/08_M": "Presencial",
+    "1_05/08_M": "Presencial",
+    "1_06/08_M": "Presencial",
+    "1_07/08_M": "08-17 Home Office"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
     "he_0_09/07_Du": 1
   },
   "versao": "6730cbfc",
-  "ts": "2026-07-17T18:05:16.783Z"
+  "ts": "2026-07-17T18:09:43.644Z"
 }
