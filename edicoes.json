@@ -22,8 +22,8 @@
     "1_16/08_Ja": "Folga",
     "1_15/08_Du": "Folga",
     "1_16/08_Du": "09-18 Home Office",
-    "1_12/08_Ja": "Folga",
-    "1_11/08_Ja": "05-14 Home Office",
+    "1_12/08_Ja": "05-14 Home Office",
+    "1_11/08_Ja": "08-17 Presencial",
     "1_12/08_Du": "09-18 Presencial",
     "1_11/08_Du": "Folga",
     "1_20/08_I": "05-14 Home Office",
@@ -58,7 +58,8 @@
     "1_13/08_J": "Férias",
     "1_10/08_I": "05-14 Home Office",
     "1_12/08_I": "08-17 Presencial",
-    "0_10/07_Ja": "08-17 Presencial"
+    "0_10/07_Ja": "08-17 Presencial",
+    "1_10/08_Ja": "Folga"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -66,5 +67,5 @@
     "he_1_09/08_Ja": 4
   },
   "versao": "a3368322",
-  "ts": "2026-07-24T15:51:21.277Z"
+  "ts": "2026-07-24T15:51:59.811Z"
 }
