@@ -33,7 +33,15 @@
     "1_26/08_Ja": "09-18 Presencial",
     "1_28/08_Ja": "05-14 Home Office",
     "1_27/08_Du": "05-14 Home Office",
-    "1_29/08_Du": "08-17 Home Office"
+    "1_29/08_Du": "09-18 Home Office",
+    "1_30/08_Du": "Folga",
+    "1_30/08_I": "09-18 Home Office",
+    "1_15/08_Ja": "09-18 Home Office",
+    "1_16/08_Ja": "Folga",
+    "1_14/08_Ja": "05-14 Home Office",
+    "1_15/08_Du": "Folga",
+    "1_16/08_Du": "09-18 Home Office",
+    "1_23/08_I": "Folga"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -41,5 +49,5 @@
     "he_1_09/08_Ja": 4
   },
   "versao": "14f230de",
-  "ts": "2026-07-27T14:44:58.218Z"
+  "ts": "2026-07-27T15:31:33.097Z"
 }
