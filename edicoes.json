@@ -1,7 +1,7 @@
 {
   "edicoes": {
-    "1_03/08_I": "09-18 Presencial",
-    "1_05/08_I": "08-17 Presencial",
+    "1_03/08_I": "Folga",
+    "1_05/08_I": "05-14 Home Office",
     "1_08/08_I": "05-14 Home Office",
     "1_09/08_I": "Folga",
     "1_07/08_Ja": "09-18 Presencial",
@@ -54,14 +54,14 @@
     "1_13/08_I": "05-14 Home Office",
     "1_13/08_Du": "09-18 Presencial",
     "1_12/08_Du": "Folga",
-    "1_04/08_Du": "08-17 Presencial",
-    "1_05/08_Du": "05-14 Home Office",
+    "1_04/08_Du": "05-14 Home Office",
+    "1_05/08_Du": "09-18 Presencial",
     "1_05/08_Ja": "09-18 Presencial",
     "1_07/08_Du": "05-14 Home Office",
-    "1_06/08_I": "Folga",
-    "1_03/08_Du": "Folga",
-    "1_04/08_I": "05-14 Home Office",
-    "1_06/08_Du": "09-18 Presencial",
+    "1_06/08_I": "09-18 Presencial",
+    "1_03/08_Du": "09-18 Presencial",
+    "1_04/08_I": "08-17 Presencial",
+    "1_06/08_Du": "Folga",
     "1_12/08_Ja": "05-14 Home Office",
     "1_13/08_Ja": "08-17 Presencial",
     "1_18/08_I": "05-14 Home Office",
@@ -81,5 +81,5 @@
     "he_1_09/08_Ja": 4
   },
   "versao": "14f230de",
-  "ts": "2026-07-29T15:09:26.884Z"
+  "ts": "2026-07-29T17:46:43.751Z"
 }
