@@ -19,7 +19,7 @@
     "1_10/08_I": "05-14 Home Office",
     "1_10/08_Ja": "Folga",
     "1_11/08_Ja": "08-17 Presencial",
-    "1_11/08_Du": "05-14 Home Office",
+    "1_11/08_Du": "09-18 Presencial",
     "1_12/08_I": "09-18 Presencial",
     "1_05/08_M": "Presencial",
     "1_07/08_M": "08-17 Home Office",
@@ -28,7 +28,7 @@
     "1_21/08_Ja": "09-18 Presencial",
     "1_26/08_Ja": "09-18 Presencial",
     "1_28/08_Ja": "05-14 Home Office",
-    "1_30/08_Du": "Folga",
+    "1_30/08_Du": "09-18 Home Office",
     "1_30/08_I": "09-18 Home Office",
     "1_15/08_Ja": "09-18 Home Office",
     "1_16/08_Ja": "Folga",
@@ -37,7 +37,6 @@
     "1_16/08_Du": "09-18 Home Office",
     "1_23/08_I": "Folga",
     "1_28/08_Du": "09-18 Presencial",
-    "1_06/08_Ja": "08-17 Presencial",
     "1_14/08_Du": "09-18 Presencial",
     "1_17/08_Ja": "09-18 Presencial",
     "1_18/08_Du": "08-17 Presencial",
@@ -47,9 +46,8 @@
     "1_31/08_Ja": "09-18 Presencial",
     "1_25/08_Du": "Folga",
     "1_26/08_Du": "05-14 Home Office",
-    "1_27/08_Ja": "08-17 Presencial",
     "1_13/08_I": "05-14 Home Office",
-    "1_13/08_Du": "09-18 Presencial",
+    "1_13/08_Du": "05-14 Home Office",
     "1_05/08_Du": "09-18 Presencial",
     "1_12/08_Ja": "05-14 Home Office",
     "1_13/08_Ja": "08-17 Presencial",
@@ -60,13 +58,14 @@
     "1_26/08_I": "Folga",
     "1_14/08_I": "08-17 Presencial",
     "1_28/08_I": "09-18 Presencial",
-    "1_04/08_Du": "05-14 Home Office",
     "1_04/08_B": "08-17 Presencial",
     "1_22/08_Ja": "09-18 Home Office",
     "1_23/08_Ja": "Folga",
     "1_24/08_Ja": "09-18 Presencial",
-    "1_30/08_Ja": "Folga",
-    "1_29/08_Ja": "09-18 Home Office"
+    "1_29/08_Ja": "09-18 Home Office",
+    "1_21/08_Du": "05-14 Home Office",
+    "1_23/08_Du": "09-18 Home Office",
+    "1_29/08_Du": "Folga"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -74,8 +73,10 @@
     "he_1_09/08_Ja": 4,
     "he_1_04/08_B": 1,
     "he_1_30/08_Ja": 8,
-    "he_1_29/08_Ja": 8
+    "he_1_29/08_Ja": 8,
+    "he_1_08/08_Du": 4,
+    "he_1_23/08_Du": 8
   },
   "versao": "14f230de",
-  "ts": "2026-08-06T15:44:52.301Z"
+  "ts": "2026-08-06T15:56:31.175Z"
 }
