@@ -26,9 +26,9 @@
     "1_19/08_Ja": "09-18 Presencial",
     "1_21/08_Ja": "09-18 Presencial",
     "1_22/08_Ja": "09-18 Home Office",
-    "1_23/08_Ja": "Folga",
-    "1_24/08_Ja": "09-18 Presencial",
-    "1_25/08_Ja": "05-14 Home Office",
+    "1_23/08_Ja": "Atestado",
+    "1_24/08_Ja": "Atestado",
+    "1_25/08_Ja": "Atestado",
     "1_26/08_Ja": "09-18 Presencial",
     "1_28/08_Ja": "05-14 Home Office",
     "1_29/08_Ja": "09-18 Home Office",
@@ -75,5 +75,5 @@
     "he_1_25/08_B": 1
   },
   "versao": "22b26b5c",
-  "ts": "2026-08-17T19:22:00.826Z"
+  "ts": "2026-08-24T15:36:56.817Z"
 }
