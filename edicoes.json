@@ -29,9 +29,9 @@
     "1_23/08_Ja": "Atestado",
     "1_24/08_Ja": "Atestado",
     "1_25/08_Ja": "Atestado",
-    "1_26/08_Ja": "09-18 Presencial",
-    "1_28/08_Ja": "05-14 Home Office",
-    "1_29/08_Ja": "09-18 Home Office",
+    "1_26/08_Ja": "Atestado",
+    "1_28/08_Ja": "Atestado",
+    "1_29/08_Ja": "Atestado",
     "1_31/08_Ja": "09-18 Presencial",
     "1_05/08_Du": "09-18 Presencial",
     "1_11/08_Du": "09-18 Presencial",
@@ -61,11 +61,10 @@
     "1_08/08_I": "Vago",
     "1_25/08_I": "Vago",
     "1_19/08_B": "08-17 Home Office",
-    "1_27/08_Ja": "Folga",
+    "1_27/08_Ja": "Atestado",
     "1_27/08_Du": "Atestado",
     "1_30/08_Du": "Atestado",
     "1_31/08_Du": "Atestado",
-    "1_26/08_B": "08-17 Presencial",
     "1_25/08_M": "05-14 Home Office",
     "1_27/08_T": "05-14 Home Office",
     "2_01/09_Du": "Atestado",
@@ -98,7 +97,8 @@
     "2_27/09_I": "Vago",
     "2_28/09_I": "Vago",
     "2_29/09_I": "Vago",
-    "2_30/09_I": "Vago"
+    "2_30/09_I": "Vago",
+    "1_30/08_Ja": "Atestado"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -114,5 +114,5 @@
     "he_1_24/08_B": 1
   },
   "versao": "22b26b5c",
-  "ts": "2026-08-25T21:04:15.074Z"
+  "ts": "2026-08-26T14:45:12.346Z"
 }
