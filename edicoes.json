@@ -108,7 +108,7 @@
     "2_09/09_Ja": "Folga",
     "2_11/09_Du": "05-14 Home Office",
     "2_11/09_Ja": "09-18 Presencial",
-    "2_16/09_Du": "Folga",
+    "2_16/09_Du": "Férias",
     "2_14/09_Ja": "09-18 Presencial",
     "2_15/09_Ja": "Folga",
     "2_16/09_Ja": "09-18 Presencial",
@@ -116,8 +116,8 @@
     "2_15/09_B": "08-17 Presencial",
     "2_16/09_B": "05-14 Home Office",
     "2_22/09_B": "08-17 Presencial",
-    "2_23/09_Du": "05-14 Home Office",
-    "2_24/09_Du": "09-18 Presencial",
+    "2_23/09_Du": "Férias",
+    "2_24/09_Du": "Férias",
     "2_24/09_B": "05-14 Home Office",
     "2_29/09_Ja": "05-14 Home Office",
     "1_24/08_Du": "09-18 Home Office",
@@ -150,16 +150,25 @@
     "2_12/09_Du": "Folga",
     "2_13/09_Du": "09-18 Home Office",
     "2_19/09_Ja": "Folga",
-    "2_19/09_Du": "09-18 Home Office",
+    "2_19/09_Du": "Férias",
     "2_20/09_Ja": "09-18 Home Office",
     "2_21/09_Ja": "09-18 Presencial",
     "2_24/09_Ja": "08-17 Presencial",
-    "2_25/09_Du": "09-18 Presencial",
+    "2_25/09_Du": "Férias",
     "2_26/09_Ja": "09-18 Home Office",
-    "2_26/09_Du": "Folga",
+    "2_26/09_Du": "Férias",
     "2_27/09_Ja": "Folga",
-    "2_27/09_Du": "09-18 Home Office",
-    "2_09/09_Pa": "09-18 Presencial"
+    "2_27/09_Du": "Férias",
+    "2_09/09_Pa": "09-18 Presencial",
+    "2_17/09_Du": "Férias",
+    "2_18/09_Du": "Férias",
+    "2_20/09_Du": "Férias",
+    "2_21/09_Du": "Férias",
+    "2_22/09_Du": "Férias",
+    "2_28/09_Du": "Férias",
+    "2_29/09_Du": "Férias",
+    "2_30/09_Du": "Férias",
+    "2_14/09_Du": "09-18 Home Office"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -183,5 +192,5 @@
     "he_2_08/09_Ja": 1
   },
   "versao": "22b26b5c",
-  "ts": "2026-09-10T19:24:51.399Z"
+  "ts": "2026-09-11T15:56:10.351Z"
 }
