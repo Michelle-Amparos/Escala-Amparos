@@ -195,7 +195,30 @@
     "3_03/10_Ja": "09-18 Home Office",
     "3_03/10_I": "Folga",
     "3_04/10_I": "09-18 Home Office",
-    "3_02/10_I": "05-14 Home Office"
+    "3_02/10_I": "05-14 Home Office",
+    "3_05/10_Ja": "09-18 Presencial",
+    "3_06/10_Ja": "Folga",
+    "3_09/10_Du": "05-14 Home Office",
+    "3_11/10_Ja": "Folga",
+    "3_10/10_Du": "Folga",
+    "3_11/10_Du": "09-18 Home Office",
+    "3_09/10_I": "09-18 Presencial",
+    "3_07/10_Du": "09-18 Presencial",
+    "3_08/10_Du": "09-18 Presencial",
+    "3_07/10_J": "09-18 Presencial",
+    "3_05/10_Du": "Folga",
+    "3_13/10_I": "09-18 Presencial",
+    "3_15/10_I": "Folga",
+    "3_14/10_Du": "09-18 Presencial",
+    "3_14/10_Ja": "Folga",
+    "3_13/10_B": "09-18 Presencial",
+    "3_15/10_T": "Presencial",
+    "3_14/10_M": "Presencial",
+    "3_17/10_Du": "09-18 Home Office",
+    "3_18/10_Du": "Folga",
+    "3_17/10_I": "Folga",
+    "3_18/10_I": "09-18 Home Office",
+    "3_23/10_I": "05-14 Home Office"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -220,5 +243,5 @@
     "he_2_20/09_B": 5
   },
   "versao": "22b26b5c",
-  "ts": "2026-09-25T15:36:03.739Z"
+  "ts": "2026-09-25T18:01:43.593Z"
 }
