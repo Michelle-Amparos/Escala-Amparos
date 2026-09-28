@@ -237,7 +237,7 @@
     "3_21/10_I": "09-18 Presencial",
     "3_22/10_I": "05-14 Home Office",
     "3_23/10_Du": "05-14 Home Office",
-    "3_25/10_B": "09-18 Home Office",
+    "3_25/10_B": "Folga",
     "3_29/10_B": "Férias",
     "3_30/10_B": "Férias",
     "3_27/10_Du": "09-18 Presencial",
@@ -252,7 +252,12 @@
     "3_13/10_Du": "09-18 Presencial",
     "3_14/10_Ja": "08-17 Presencial",
     "3_19/10_I": "09-18 Presencial",
-    "3_14/10_B": "05-14 Home Office"
+    "3_14/10_B": "05-14 Home Office",
+    "3_22/10_Du": "09-18 Presencial",
+    "3_24/10_B": "Folga",
+    "3_24/10_I": "Folga",
+    "3_25/10_I": "09-18 Home Office",
+    "3_24/10_Du": "09-18 Home Office"
   },
   "heExtras": {
     "he_0_07/07_B": 3,
@@ -278,5 +283,5 @@
     "he_3_15/10_B": 1
   },
   "versao": "22b26b5c",
-  "ts": "2026-09-28T14:55:58.000Z"
+  "ts": "2026-09-28T14:58:23.385Z"
 }
