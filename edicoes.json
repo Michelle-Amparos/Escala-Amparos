@@ -190,7 +190,7 @@
     "3_05/10_Du": "Folga",
     "3_13/10_I": "09-18 Presencial",
     "3_15/10_I": "05-14 Home Office",
-    "3_14/10_Du": "05-14 Home Office",
+    "3_14/10_Du": "Atestado",
     "3_13/10_B": "08-17 Presencial",
     "3_15/10_T": "Presencial",
     "3_14/10_M": "Presencial",
@@ -238,7 +238,7 @@
     "3_01/10_Du": "09-18 Presencial",
     "3_02/10_Ja": "09-18 Presencial",
     "3_05/10_I": "09-18 Presencial",
-    "3_13/10_Du": "09-18 Presencial",
+    "3_13/10_Du": "Atestado",
     "3_14/10_Ja": "09-18 Presencial",
     "3_19/10_I": "09-18 Presencial",
     "3_14/10_B": "09-18 Presencial",
@@ -296,5 +296,5 @@
     "he_3_15/10_B": 1
   },
   "versao": "22b26b5c",
-  "ts": "2026-09-30T16:26:50.762Z"
+  "ts": "2026-10-15T18:19:35.118Z"
 }
